@@ -1,0 +1,2504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Eye as a Window to the Brain — Common Causes, Measurement Error &amp; Biomarker Design</title>
+<style>
+  :root {
+    --bg: #f8f7f4;
+    --surface: #ffffff;
+    --surface-2: #f1f0ec;
+    --surface-3: #e7e5df;
+    --ink: #1c242b;
+    --ink-soft: #4a5562;
+    --ink-muted: #6e7b8a;
+    --line: #d8d5cd;
+    --line-strong: #b8b4aa;
+
+    /* Consistent semantic palette across SEM diagrams & plots */
+    --c-vasc: #0d9488;      /* Latent shared microvascular pathology U* */
+    --c-vasc-bg: #e6f7f5;
+    --c-cov: #4f46e5;       /* Known covariate / Age C*, C */
+    --c-cov-bg: #eef2ff;
+    --c-ret: #0284c7;       /* Retina R*, R */
+    --c-ret-bg: #e0f2fe;
+    --c-brn: #e11d48;       /* Brain B*, B */
+    --c-brn-bg: #ffe4e6;
+    --c-err: #d97706;       /* Measurement error / naive bias */
+    --c-err-bg: #fef3c7;
+    --c-good: #15803d;
+
+    --plot-bg: #fcfcfa;
+    --plot-grid: #eceae4;
+    --plot-axis: #8c887e;
+    --shadow: 0 2px 10px rgba(28, 36, 43, 0.05);
+  }
+
+  html.dark {
+    --bg: #0f151c;
+    --surface: #16202a;
+    --surface-2: #1d2a37;
+    --surface-3: #263646;
+    --ink: #e8eef4;
+    --ink-soft: #b6c4d2;
+    --ink-muted: #8496a8;
+    --line: #2a3a4b;
+    --line-strong: #3d5268;
+
+    --c-vasc: #2dd4bf;
+    --c-vasc-bg: rgba(45, 212, 191, 0.13);
+    --c-cov: #818cf8;
+    --c-cov-bg: rgba(129, 140, 248, 0.14);
+    --c-ret: #38bdf8;
+    --c-ret-bg: rgba(56, 189, 248, 0.14);
+    --c-brn: #fb7185;
+    --c-brn-bg: rgba(251, 113, 133, 0.14);
+    --c-err: #fbbf24;
+    --c-err-bg: rgba(251, 191, 36, 0.14);
+    --c-good: #4ade80;
+
+    --plot-bg: #111922;
+    --plot-grid: #1c2834;
+    --plot-axis: #5a6d80;
+    --shadow: 0 4px 16px rgba(0, 0, 0, 0.28);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 16px/1.68 "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Top navigation */
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    background: var(--bg);
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+    padding: 8px 20px;
+  }
+  .topbar-inner {
+    max-width: 1120px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+  }
+  .nav-links {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 2px 0;
+  }
+  .nav-links a {
+    color: var(--ink-soft);
+    text-decoration: none;
+    font-size: 0.83rem;
+    font-weight: 600;
+    padding: 5px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+    transition: background 0.15s, color 0.15s;
+  }
+  .nav-links a:hover {
+    background: var(--surface-2);
+    color: var(--ink);
+  }
+  .theme-btn {
+    background: var(--surface);
+    color: var(--ink-soft);
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    padding: 5px 10px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .theme-btn:hover { border-color: var(--line-strong); color: var(--ink); }
+
+  /* Header */
+  header.hero {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 46px 24px 32px;
+    border-bottom: 1px solid var(--line);
+  }
+  .eyebrow {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--c-vasc);
+    margin-bottom: 8px;
+  }
+  header.hero h1 {
+    font-size: clamp(1.75rem, 3.2vw, 2.45rem);
+    line-height: 1.2;
+    margin: 0 0 14px;
+    max-width: 860px;
+    letter-spacing: -0.015em;
+  }
+  header.hero p.lead {
+    font-size: 1.08rem;
+    color: var(--ink-soft);
+    max-width: 820px;
+    margin: 0 0 22px;
+  }
+
+  /* SEM Notation Primer Banner */
+  .notation-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 18px;
+    box-shadow: var(--shadow);
+  }
+  .notation-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.86rem;
+    line-height: 1.38;
+    color: var(--ink-soft);
+  }
+  .notation-item strong { color: var(--ink); display: block; font-size: 0.88rem; }
+
+  /* Main layout */
+  main {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 0 24px 88px;
+  }
+  section.chapter {
+    padding: 48px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .prose { max-width: 780px; }
+  h2 {
+    font-size: clamp(1.4rem, 2.4vw, 1.82rem);
+    line-height: 1.25;
+    margin: 0 0 10px;
+    letter-spacing: -0.01em;
+  }
+  h3 {
+    font-size: 1.12rem;
+    margin: 26px 0 8px;
+    color: var(--ink);
+  }
+  p { margin: 12px 0; color: var(--ink-soft); }
+  p strong, li strong { color: var(--ink); }
+  ul, ol { color: var(--ink-soft); padding-left: 22px; }
+  li { margin: 6px 0; }
+
+  /* Callouts */
+  .callout {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--c-vasc);
+    border-radius: 0 10px 10px 0;
+    padding: 14px 18px;
+    margin: 18px 0;
+    max-width: 780px;
+    box-shadow: var(--shadow);
+  }
+  .callout.warn { border-left-color: var(--c-err); }
+  .callout.cov { border-left-color: var(--c-cov); }
+  .callout-title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .callout p { margin: 6px 0; font-size: 0.94rem; }
+
+  /* Math typography (offline-proof, crisp serif italics) */
+  .m {
+    font-family: "Cambria Math", "STIX Two Math", Georgia, "Times New Roman", serif;
+    font-style: italic;
+    white-space: nowrap;
+  }
+  .m .rm { font-style: normal; }
+  .eq-block {
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    padding: 12px 16px;
+    margin: 12px 0;
+    font-family: "Cambria Math", "STIX Two Math", Georgia, serif;
+    font-size: 1.02rem;
+    overflow-x: auto;
+    color: var(--ink);
+  }
+  .frac {
+    display: inline-flex;
+    flex-direction: column;
+    vertical-align: middle;
+    text-align: center;
+    padding: 0 3px;
+    font-size: 0.92em;
+  }
+  .frac > span:first-child { border-bottom: 1px solid currentColor; padding: 0 3px 1px; }
+  .frac > span:last-child { padding: 1px 3px 0; }
+
+  /* Interactive Workbench Cards */
+  .workbench {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 20px;
+    margin: 24px 0;
+    box-shadow: var(--shadow);
+  }
+  .preset-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    padding-bottom: 16px;
+    margin-bottom: 18px;
+    border-bottom: 1px solid var(--line);
+  }
+  .preset-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-muted);
+    margin-right: 4px;
+  }
+  button.preset, button.action {
+    background: var(--surface-2);
+    color: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 7px 12px;
+    font-size: 0.84rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.14s ease;
+  }
+  button.preset:hover, button.action:hover {
+    border-color: var(--c-vasc);
+    background: var(--c-vasc-bg);
+  }
+  button.preset.active {
+    background: var(--c-vasc);
+    color: #ffffff;
+    border-color: var(--c-vasc);
+  }
+  html.dark button.preset.active { color: #06221f; }
+  button.action.primary {
+    background: var(--ink);
+    color: var(--bg);
+    border-color: var(--ink);
+  }
+  button.action.primary:hover { opacity: 0.9; }
+
+  .wb-grid {
+    display: grid;
+    grid-template-columns: 330px 1fr;
+    gap: 22px;
+    align-items: start;
+  }
+  @media (max-width: 920px) {
+    .wb-grid { grid-template-columns: 1fr; }
+  }
+
+  /* Controls column */
+  .controls-box {
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 11px;
+    padding: 15px;
+  }
+  .ctrl-group-title {
+    font-size: 0.73rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-muted);
+    margin: 12px 0 8px;
+    padding-top: 10px;
+    border-top: 1px solid var(--line);
+  }
+  .ctrl-group-title:first-child { margin-top: 0; padding-top: 0; border-top: none; }
+  .ctrl { margin: 10px 0; }
+  .ctrl label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 0.84rem;
+    color: var(--ink-soft);
+    margin-bottom: 3px;
+    gap: 8px;
+  }
+  .ctrl label output {
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    color: var(--ink);
+    font-size: 0.85rem;
+  }
+  input[type="range"] {
+    width: 100%;
+    accent-color: var(--c-vasc);
+    cursor: pointer;
+    margin: 2px 0;
+  }
+  .ctrl-hint {
+    font-size: 0.75rem;
+    color: var(--ink-muted);
+    line-height: 1.35;
+  }
+  .btn-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  /* Plots & SEM panels */
+  .vis-stack { display: flex; flex-direction: column; gap: 16px; }
+  .two-plots {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  @media (max-width: 680px) {
+    .two-plots { grid-template-columns: 1fr; }
+  }
+  .plot-card {
+    background: var(--plot-bg);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px;
+  }
+  .plot-card h4 {
+    margin: 0 0 2px;
+    font-size: 0.9rem;
+    color: var(--ink);
+  }
+  .plot-card .plot-sub {
+    font-size: 0.77rem;
+    color: var(--ink-muted);
+    margin: 0 0 8px;
+  }
+  canvas {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 6px;
+  }
+  .sem-card {
+    background: var(--plot-bg);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .sem-card h4 {
+    margin: 0 0 6px;
+    font-size: 0.86rem;
+    color: var(--ink-soft);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .sem-svg {
+    width: 100%;
+    height: auto;
+    max-height: 235px;
+    display: block;
+    margin: 0 auto;
+  }
+
+  /* Metric readout cards */
+  .metrics-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+    gap: 10px;
+  }
+  .metric {
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    padding: 10px 12px;
+  }
+  .metric .m-label {
+    font-size: 0.75rem;
+    color: var(--ink-muted);
+    line-height: 1.3;
+  }
+  .metric .m-val {
+    font-size: 1.32rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+    margin-top: 2px;
+  }
+  .metric .m-sub {
+    font-size: 0.74rem;
+    color: var(--ink-soft);
+    margin-top: 2px;
+  }
+  .metric.hl-vasc { border-color: var(--c-vasc); background: var(--c-vasc-bg); }
+  .metric.hl-err { border-color: var(--c-err); background: var(--c-err-bg); }
+
+  .live-banner {
+    background: var(--surface-2);
+    border-left: 4px solid var(--c-vasc);
+    border-radius: 0 8px 8px 0;
+    padding: 10px 14px;
+    font-size: 0.88rem;
+    color: var(--ink);
+    line-height: 1.48;
+  }
+  .live-banner.warn { border-left-color: var(--c-err); }
+
+  /* Collapsible Deeper Dives */
+  details.drawer {
+    max-width: 780px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 0 16px;
+    margin: 16px 0;
+  }
+  details.drawer summary {
+    cursor: pointer;
+    padding: 12px 0;
+    font-weight: 600;
+    font-size: 0.92rem;
+    color: var(--c-cov);
+    user-select: none;
+  }
+  details.drawer[open] { padding-bottom: 14px; }
+  pre.codeblock {
+    background: #141b22;
+    color: #e2e8f0;
+    padding: 14px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    line-height: 1.5;
+    overflow-x: auto;
+    margin: 10px 0 4px;
+  }
+
+  /* Part 4 Spec & Checklist cards */
+  .decision-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 14px;
+    margin-top: 18px;
+  }
+  .d-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 11px;
+    padding: 16px;
+    box-shadow: var(--shadow);
+  }
+  .d-card .step-num {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 2px 8px;
+    border-radius: 99px;
+    background: var(--c-vasc-bg);
+    color: var(--c-vasc);
+    margin-bottom: 8px;
+  }
+  .d-card h4 { margin: 0 0 6px; font-size: 0.98rem; color: var(--ink); }
+  .d-card p { margin: 0; font-size: 0.87rem; line-height: 1.52; }
+
+  footer {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 28px 24px 60px;
+    color: var(--ink-muted);
+    font-size: 0.83rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .pill-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 0.78rem;
+    color: var(--ink-soft);
+    margin-top: 6px;
+  }
+  .pill-legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .swatch { width: 11px; height: 11px; border-radius: 50%; display: inline-block; }
+  .swatch.line { height: 3px; width: 16px; border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<nav class="topbar">
+  <div class="topbar-inner">
+    <div class="nav-links">
+      <a href="#part1">1 · Common Causes &amp; Analogy</a>
+      <a href="#part2">2 · Error on Both Sides &amp; SNR</a>
+      <a href="#part3">3 · Naive Adjustment vs. Disattenuation</a>
+      <a href="#part4">4 · Designing the Ideal Biomarker</a>
+    </div>
+    <button class="theme-btn" id="themeToggle" type="button">Dark mode</button>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="eyebrow">Interactive Tutorial · Retinal &amp; Neurovascular Biomarkers</div>
+  <h1>Common Causes, Measurement Error, and the Search for Retinal Biomarkers of Brain Disease</h1>
+  <p class="lead">
+    The retina is often described as a “window to the brain”. Yet in practice, promising retinal imaging biomarkers frequently appear statistically unassociated with brain disease once researchers adjust for covariates like age in a standard regression model. This interactive guide explores <strong>why eye and brain measures correlate</strong>, how <strong>measurement error on both sides of the equation</strong> interacts with covariate adjustment, and what an <strong>ideal retinal biomarker</strong> looks like in both engineering and causal terms.
+  </p>
+
+  <div class="notation-bar" aria-label="Diagram notation guide">
+    <div class="notation-item">
+      <svg width="52" height="36" viewBox="0 0 52 36" style="flex-shrink:0">
+        <ellipse cx="26" cy="18" rx="22" ry="14" fill="var(--c-vasc-bg)" stroke="var(--c-vasc)" stroke-width="2"/>
+        <text x="26" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)" font-style="italic">U*</text>
+      </svg>
+      <div><strong>Ellipse = Latent Biology</strong>Unobserved tissue state or disease process (e.g., <span class="m">U*, R*, B*</span>).</div>
+    </div>
+    <div class="notation-item">
+      <svg width="52" height="36" viewBox="0 0 52 36" style="flex-shrink:0">
+        <rect x="6" y="5" width="40" height="26" fill="var(--c-ret-bg)" stroke="var(--c-ret)" stroke-width="2"/>
+        <text x="26" y="22" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">R</text>
+      </svg>
+      <div><strong>Rectangle = Measured Variable</strong>Numbers recorded in your dataset (e.g., <span class="m">R, B, C</span>).</div>
+    </div>
+    <div class="notation-item">
+      <svg width="58" height="36" viewBox="0 0 58 36" style="flex-shrink:0">
+        <defs><marker id="arr0" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="var(--ink-soft)"/></marker></defs>
+        <circle cx="13" cy="18" r="10" fill="var(--c-err-bg)" stroke="var(--c-err)" stroke-width="1.6"/>
+        <text x="13" y="21" text-anchor="middle" font-size="11" fill="var(--ink)" font-style="italic">ε</text>
+        <line x1="24" y1="18" x2="48" y2="18" stroke="var(--ink-soft)" stroke-width="1.8" marker-end="url(#arr0)"/>
+      </svg>
+      <div><strong>Structural Equation Arrows</strong>Direct causal or measurement-error inputs into a variable.</div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <!-- =================================================================== -->
+  <!-- PART 1: COMMON CAUSES, REICHENBACH & DUMITRASCU (2018)              -->
+  <!-- =================================================================== -->
+  <section class="chapter" id="part1">
+    <div class="prose">
+      <div class="eyebrow">Part 1 · Causal Structure &amp; Analogy</div>
+      <h2>Why Would a Retinal Measure Correlate with Brain Disease at All?</h2>
+      <p>
+        In almost all neurovascular studies, narrowing or leakage in a retinal arteriole does <strong>not</strong> physically cause white matter hyperintensities (WMH) in the cerebral hemispheres, nor do cerebral WMH typically cause microvascular lesions in the retina. There is no direct causal arrow from retina to brain (<span class="m">R* &nrightarrow; B*</span>).
+      </p>
+      <p>
+        Instead, retinal biomarkers rely on a biological <strong>analogy</strong> grounded in <strong>Reichenbach’s Common Cause Principle</strong>: when two variables are genuinely associated and neither causes the other, their association arises from one or more <strong>shared upstream causes</strong>—creating a fork (<span class="m">R* &larr; Common Cause &rarr; B*</span>).
+      </p>
+
+      <div class="callout">
+        <div class="callout-title">Empirical Anchor · Retinopathy &amp; Severe WMH (Dumitrascu et al., 2018)</div>
+        <p>
+          In a meta-analysis of 28 prospective studies (<span class="m">n</span> = 56,379), clinically visible <strong>retinopathy</strong> (adjusted OR 1.94, 95% CI 1.36–2.76) and <strong>retinal haemorrhages</strong> (adjusted OR 2.23, 95% CI 1.34–3.70) were consistently associated with cerebral WMH <em>even after adjusting for age, hypertension, diabetes, and smoking</em>.
+        </p>
+        <p>
+          On a causal graph, an association between retina and brain that survives adjustment for measured risk factors (<span class="m">C</span>) implies an <strong>unblocked path through a latent microvascular disease process (<span class="m">U*</span>)</strong>—such as shared blood–retinal and blood–brain barrier dysfunction—that routine clinic risk factors do not fully capture.
+        </p>
+      </div>
+
+      <p>
+        Before introducing measurement noise, use the simulator below to explore how <strong>conditioning (adjusting)</strong> behaves on a fork when we observe tissue biology directly. Notice that whether adjustment makes an association vanish or persist depends entirely on <em>which common-cause paths exist</em> and <em>which node you adjust for</em>.
+      </p>
+    </div>
+
+    <div class="workbench">
+      <div class="preset-bar">
+        <span class="preset-label">Guided Scenarios:</span>
+        <button class="preset active" type="button" data-p1="dumitrascu">1A · Shared Microvascular Pathology + Age (Dumitrascu 2018)</button>
+        <button class="preset" type="button" data-p1="ageonly">1B · Systemic Risk Factor Only (Screening Off)</button>
+        <button class="preset" type="button" data-p1="independent">1C · Parallel Independent Organs (No Common Cause)</button>
+      </div>
+
+      <div class="wb-grid">
+        <div class="controls-box">
+          <div class="ctrl-group-title">Latent Structural Paths</div>
+          <div class="ctrl">
+            <label><span>Known covariate fork (<span class="m">C* &rarr; R*, B*</span>)</span><output id="p1_vc">0.80</output></label>
+            <input id="p1_c" type="range" min="0" max="1.6" step="0.05" value="0.80">
+            <div class="ctrl-hint">E.g., chronological age or systemic blood pressure acting directly on both organs.</div>
+          </div>
+          <div class="ctrl">
+            <label><span>Latent microvascular fork (<span class="m">U* &rarr; R*, B*</span>)</span><output id="p1_vu">0.85</output></label>
+            <input id="p1_u" type="range" min="0" max="1.6" step="0.05" value="0.85">
+            <div class="ctrl-hint">Unmeasured shared small-vessel / barrier pathology beyond <span class="m">C*</span>.</div>
+          </div>
+          <div class="ctrl">
+            <label><span>Organ-specific variation (<span class="m">&sigma;<sub>&zeta;</sub></span>)</span><output id="p1_vz">0.80</output></label>
+            <input id="p1_z" type="range" min="0.25" max="1.8" step="0.05" value="0.80">
+            <div class="ctrl-hint">Local biological variation unique to the eye (<span class="m">&zeta;<sub>R</sub></span>) or brain (<span class="m">&zeta;<sub>B</sub></span>).</div>
+          </div>
+          <div class="ctrl">
+            <label><span>Cohort sample size (<span class="m">n</span>)</span><output id="p1_vn">250</output></label>
+            <input id="p1_n" type="range" min="50" max="800" step="25" value="250">
+          </div>
+          <div class="btn-row">
+            <button class="action primary" id="p1_resample" type="button">↻ New Cohort Sample</button>
+            <button class="action" id="p1_col" type="button">Colour points by C*</button>
+          </div>
+        </div>
+
+        <div class="vis-stack">
+          <div class="sem-card">
+            <h4>
+              <span>Structural Equation Diagram (Idealised Error-Free Biology)</span>
+              <span style="font-weight:400;font-size:0.78rem;color:var(--ink-muted)">Dashed box on [C] = conditioned on in right-hand plot</span>
+            </h4>
+            <svg id="p1_svg" class="sem-svg" viewBox="0 0 680 185" xmlns="http://www.w3.org/2000/svg"></svg>
+          </div>
+
+          <div class="two-plots">
+            <div class="plot-card">
+              <h4>Unadjusted View: <span class="m">B*</span> vs. <span class="m">R*</span></h4>
+              <div class="plot-sub">Combines all open common-cause paths (<span class="m">C*</span> and <span class="m">U*</span>).</div>
+              <canvas id="p1_c1" width="420" height="300"></canvas>
+            </div>
+            <div class="plot-card">
+              <h4>Adjusted for <span class="m">C</span>: Residual <span class="m">B*</span> vs. Residual <span class="m">R*</span></h4>
+              <div class="plot-sub">Blocks <span class="m">R* &larr; C* &rarr; B*</span>; tests if <span class="m">R* &larr; U* &rarr; B*</span> exists.</div>
+              <canvas id="p1_c2" width="420" height="300"></canvas>
+            </div>
+          </div>
+
+          <div class="metrics-row">
+            <div class="metric">
+              <div class="m-label">Unadjusted correlation <span class="m">r(R*, B*)</span></div>
+              <div class="m-val" id="p1_r">0.00</div>
+              <div class="m-sub" id="p1_b_raw">Slope: 0.00</div>
+            </div>
+            <div class="metric hl-vasc">
+              <div class="m-label">Adjusted partial corr. <span class="m">r(R*, B* | C)</span></div>
+              <div class="m-val" id="p1_pr">0.00</div>
+              <div class="m-sub" id="p1_b_adj">Adjusted slope: 0.00</div>
+            </div>
+          </div>
+          <div class="live-banner" id="p1_msg"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <div class="callout-title">Crucial Caveat · Conditioning on Disease Severity Itself</div>
+      <p>
+        Try <strong>Scenario 1B</strong> above, where a single factor causes both retinal and brain changes. If that factor were a direct measure of the <em>very disease process you want your biomarker to detect</em> (for example, stratifying an Alzheimer’s cohort tightly by cognitive severity, or adjusting for a global small-vessel disease score), conditioning on it screens off the fork and makes even a <strong>perfect</strong> retinal biomarker look useless (MacCormick et al., 2022). Adjusting for a variable is never automatically “good” or “bad”—it always asks whether paths <em>other than</em> the adjusted variable remain open.
+      </p>
+    </div>
+
+    <details class="drawer">
+      <summary>Optional Deeper Dive · Structural equations &amp; Reichenbach’s screening-off formula</summary>
+      <p>
+        In Part 1, true retinal and brain states are generated by two independent standardized factors—known risk factor <span class="m">C* &sim; N(0,1)</span> and latent microvascular pathology <span class="m">U* &sim; N(0,1)</span>—plus independent local biological variation <span class="m">&zeta;<sub>R</sub>, &zeta;<sub>B</sub> &sim; N(0, &sigma;<sub>&zeta;</sub><sup>2</sup>)</span>:
+      </p>
+      <div class="eq-block">
+        <span class="m">R* = &alpha;<sub>R</sub> C* + &lambda;<sub>R</sub> U* + &zeta;<sub>R</sub></span>, &emsp;
+        <span class="m">B* = &alpha;<sub>B</sub> C* + &lambda;<sub>B</sub> U* + &zeta;<sub>B</sub></span>
+      </div>
+      <p>
+        By the law of total covariance, the overall covariance between <span class="m">R*</span> and <span class="m">B*</span> splits cleanly into the covariance transmitted through <span class="m">C*</span> (<span class="m">&alpha;<sub>R</sub>&alpha;<sub>B</sub></span>) plus the within-<span class="m">C*</span> covariance transmitted through <span class="m">U*</span> (<span class="m">&lambda;<sub>R</sub>&lambda;<sub>B</sub></span>). Adjusting for exact <span class="m">C = C*</span> removes <span class="m">&alpha;<sub>R</sub>&alpha;<sub>B</sub></span> and isolates <span class="m">&lambda;<sub>R</sub>&lambda;<sub>B</sub></span>. When <span class="m">&lambda;<sub>R</sub> = 0</span> or <span class="m">&lambda;<sub>B</sub> = 0</span>, <span class="m">C*</span> screens off <span class="m">R*</span> from <span class="m">B*</span> (<span class="m">R* &perp; B* | C*</span>).
+      </p>
+    </details>
+  </section>
+
+
+  <!-- =================================================================== -->
+  <!-- PART 2: ERROR ON BOTH SIDES & THE SNR SPECTRUM                      -->
+  <!-- =================================================================== -->
+  <section class="chapter" id="part2">
+    <div class="prose">
+      <div class="eyebrow">Part 2 · Errors-in-Variables &amp; The SNR Spectrum</div>
+      <h2>Error on Both Sides of the Equation</h2>
+      <p>
+        If Dumitrascu et al. (2018) found clear risk-factor-adjusted associations for frank <strong>retinopathy and retinal haemorrhages</strong>, why do studies of <em>continuous, early-stage</em> retinal vessel metrics in typical clinical cohorts (<span class="m">n</span> = 80–300) so often report weak or inconsistent results?
+      </p>
+      <p>
+        Frank haemorrhages are late-stage binary events (“the tip of the iceberg”) pooled across tens of thousands of patients. When we try to measure subtle continuous physiology earlier in the disease course, we confront <strong>measurement error on both sides of the regression equation</strong>:
+      </p>
+      <ul>
+        <li>
+          <strong>Error in the retinal predictor (<span class="m">R = R* + &varepsilon;<sub>R</sub></span>):</strong> Optical resolution limits (e.g., sub-pixel vessel calibre changes), cardiac-cycle pulsatility in single snapshots, focus/illumination drift, or media opacity. Because ordinary regression treats the horizontal axis (<span class="m">R</span>) as if it were error-free, horizontal noise stretches the cloud sideways and <strong>systematically flattens the regression slope toward zero</strong> (<em>attenuation bias</em>).
+        </li>
+        <li>
+          <strong>Error in the brain outcome (<span class="m">B = B* + &varepsilon;<sub>B</sub></span>):</strong> Scanner noise, WMH segmentation thresholds, or physiological day-to-day vascular variability. Vertical noise does not bias the linear slope <span class="m">&beta;</span> on average, <strong>but it inflates scatter, shrinks the correlation <span class="m">r</span>, and widens confidence intervals</strong>.
+        </li>
+      </ul>
+      <p>
+        Use the controls below to move along the <strong>Signal-to-Noise Ratio (SNR) spectrum</strong>—and watch how <strong>averaging <span class="m">k</span> repeated measurements or cycles within an eye</strong> shrinks random retinal error variance by <span class="m">1/k</span>.
+      </p>
+    </div>
+
+    <div class="workbench">
+      <div class="preset-bar">
+        <span class="preset-label">SNR Spectrum Presets:</span>
+        <button class="preset" type="button" data-p2="lowsnr">2A · Noisy Single Snapshot (k = 1, Low SNR)</button>
+        <button class="preset active" type="button" data-p2="moderate">2B · Typical Unaveraged Biomarker</button>
+        <button class="preset" type="button" data-p2="averaged">2C · Signal-Averaged Dynamic Capture (k = 12 cycles)</button>
+        <button class="preset" type="button" data-p2="changescore">2D · Noisy Longitudinal Change Score (&Delta;R vs &Delta;B)</button>
+      </div>
+
+      <div class="wb-grid">
+        <div class="controls-box">
+          <div class="ctrl-group-title">Signal Lever (Biology &amp; Resolution)</div>
+          <div class="ctrl">
+            <label><span>Biological coupling (<span class="m">U* &rarr; R*, B*</span>)</span><output id="p2_vl">0.85</output></label>
+            <input id="p2_l" type="range" min="0.2" max="1.4" step="0.05" value="0.85">
+            <div class="ctrl-hint">How directly the measurement targets shared microvascular pathology.</div>
+          </div>
+
+          <div class="ctrl-group-title">Noise Levers (Retina &amp; Brain)</div>
+          <div class="ctrl">
+            <label><span>Single-measure retinal error (<span class="m">&sigma;<sub>&varepsilon;R</sub></span>)</span><output id="p2_ver">1.15</output></label>
+            <input id="p2_er" type="range" min="0.0" max="2.4" step="0.05" value="1.15">
+          </div>
+          <div class="ctrl">
+            <label><span>Within-eye averaged repeats (<span class="m">k</span>)</span><output id="p2_vk">1</output></label>
+            <input id="p2_k" type="range" min="1" max="16" step="1" value="1">
+            <div class="ctrl-hint">Averaging <span class="m">k</span> cycles/frames cuts random error SD to <span class="m">&sigma;<sub>&varepsilon;R</sub> / &radic;k</span>.</div>
+          </div>
+          <div class="ctrl">
+            <label><span>Brain MRI measurement error (<span class="m">&sigma;<sub>&varepsilon;B</sub></span>)</span><output id="p2_veb">0.90</output></label>
+            <input id="p2_eb" type="range" min="0.0" max="2.4" step="0.05" value="0.90">
+          </div>
+
+          <div class="btn-row">
+            <button class="action primary" id="p2_overlay" type="button">Hide Latent Truth &amp; Error Vectors</button>
+            <button class="action" id="p2_resample" type="button">↻ New Sample (n = 180)</button>
+          </div>
+        </div>
+
+        <div class="vis-stack">
+          <div class="sem-card">
+            <h4>
+              <span>Measurement Model SEM (Latent States vs. Observed Measurements)</span>
+              <span id="p2_eff_err" style="font-weight:600;font-size:0.78rem;color:var(--c-ret)"></span>
+            </h4>
+            <svg id="p2_svg" class="sem-svg" viewBox="0 0 680 190" xmlns="http://www.w3.org/2000/svg"></svg>
+          </div>
+
+          <div class="plot-card">
+            <h4>Observed Regression (<span class="m">B</span> on <span class="m">R</span>) vs. True Underlying Biology (<span class="m">B*</span> on <span class="m">R*</span>)</h4>
+            <div class="plot-sub">Fixed coordinate scale: watch horizontal noise spread <span class="m">R</span> sideways and tilt the solid regression line flat.</div>
+            <canvas id="p2_c1" width="700" height="330"></canvas>
+            <div class="pill-legend">
+              <span><i class="swatch" style="background:var(--c-ret)"></i>Observed data (<span class="m">R, B</span>)</span>
+              <span><i class="swatch" style="background:var(--c-vasc);opacity:0.55"></i>Latent tissue state (<span class="m">R*, B*</span>) + error displacement</span>
+              <span><i class="swatch line" style="background:var(--c-vasc)"></i>True latent slope (<span class="m">&beta;<sub>true</sub></span>)</span>
+              <span><i class="swatch line" style="background:var(--c-err)"></i>Naive observed OLS slope (<span class="m">&beta;<sub>OLS</sub></span>)</span>
+            </div>
+          </div>
+
+          <div class="metrics-row">
+            <div class="metric">
+              <div class="m-label">Retinal Reliability (<span class="m">ICC<sub>R</sub></span>)</div>
+              <div class="m-val" id="p2_iccr">0.00</div>
+              <div class="m-sub" id="p2_iccb">Brain ICC<sub>B</sub>: 0.00</div>
+            </div>
+            <div class="metric">
+              <div class="m-label">True Latent Slope / Corr.</div>
+              <div class="m-val" id="p2_btrue">0.00</div>
+              <div class="m-sub" id="p2_rtrue">r<sub>true</sub> = 0.00</div>
+            </div>
+            <div class="metric hl-err">
+              <div class="m-label">Observed Slope / Corr.</div>
+              <div class="m-val" id="p2_bobs">0.00</div>
+              <div class="m-sub" id="p2_robs">r<sub>obs</sub> = 0.00</div>
+            </div>
+            <div class="metric hl-vasc">
+              <div class="m-label">Slope Retained</div>
+              <div class="m-val" id="p2_atten">0%</div>
+              <div class="m-sub">Expected &approx; ICC<sub>R</sub></div>
+            </div>
+          </div>
+          <div class="live-banner" id="p2_msg"></div>
+        </div>
+      </div>
+    </div>
+
+    <details class="drawer">
+      <summary>Optional Deeper Dive · Attenuation equations &amp; why longitudinal change scores are doubly sensitive</summary>
+      <p>
+        Suppose <span class="m">R = R* + <span class="rm">e&#772;</span><sub>R</sub></span> (after averaging <span class="m">k</span> repeats within an eye, so <span class="m"><span class="rm">Var(e&#772;</span><sub>R</sub><span class="rm">)</span> = &sigma;<sub>&varepsilon;R</sub><sup>2</sup> / k</span>) and <span class="m">B = B* + &varepsilon;<sub>B</sub></span>, with independent random errors:
+      </p>
+      <div class="eq-block">
+        <span class="m"><span class="rm">ICC</span><sub>R</sub> = </span>
+        <span class="frac"><span class="m"><span class="rm">Var</span>(R*)</span><span class="m"><span class="rm">Var</span>(R*) + &sigma;<sub>&varepsilon;R</sub><sup>2</sup> / k</span></span>,
+        &emsp;
+        <span class="m">E[&beta;&#770;<sub>OLS</sub>] = &beta;<sub>true</sub> &middot; <span class="rm">ICC</span><sub>R</sub></span>,
+        &emsp;
+        <span class="m">r<sub>obs</sub> &approx; r<sub>true</sub> &radic;<span style="text-decoration:overline"><span class="rm">ICC</span><sub>R</sub> &middot; <span class="rm">ICC</span><sub>B</sub></span></span>
+      </div>
+      <p>
+        <strong>Longitudinal change scores (<span class="m">&Delta;R = R<sub>2</sub> &minus; R<sub>1</sub></span>):</strong> Subtracting baseline from follow-up cancels out between-person differences, leaving often modest true progression variance (<span class="m">&sigma;<sub>&Delta;</sub><sup>2</sup></span>), while <strong>adding the measurement error variances of both visits (<span class="m">2&sigma;<sub>&varepsilon;R</sub><sup>2</sup>/k</span>)</strong>. Without high repeatability (<span class="m">k</span>-averaging, video rather than single static frames) and an empirical repeatability study to establish the minimal detectable change, true longitudinal biological coupling is easily mistaken for a null finding.
+      </p>
+    </details>
+  </section>
+
+
+  <!-- =================================================================== -->
+  <!-- PART 3: COMMON CAUSES + MEASUREMENT ERROR (THE MULTIVARIABLE TRAP)  -->
+  <!-- =================================================================== -->
+  <section class="chapter" id="part3">
+    <div class="prose">
+      <div class="eyebrow">Part 3 · When Adjustment Meets Measurement Error</div>
+      <h2>Why Naive Regression (<code>Brain ~ Retina + Age</code>) Creates the Impression of “No Association”</h2>
+      <p>
+        Now put Part 1 and Part 2 together—because this is what happens in almost every real retinal biomarker paper. Suppose increasing <strong>Age (<span class="m">C*</span>)</strong> contributes to <strong>shared microvascular disease (<span class="m">U*</span>)</strong> and also has some direct non-vascular effects on the brain. A researcher fits a standard multiple regression of Brain WMH (<span class="m">B</span>) on Retinal Biomarker (<span class="m">R</span>) and Age (<span class="m">C</span>) to test whether the retina reflects brain microvascular pathology beyond chronological age.
+      </p>
+      <p>
+        Look at the severe <strong>measurement asymmetry</strong> between the two predictors in <code>B ~ R + C</code>:
+      </p>
+      <ul>
+        <li><strong>Chronological Age (<span class="m">C</span>) is known with essentially zero error</strong> (<span class="m">&sigma;<sub>&varepsilon;C</sub> &approx; 0</span>, <span class="m">ICC<sub>C</sub> = 1.00</span>).</li>
+        <li><strong>The Retinal Biomarker (<span class="m">R</span>) and Brain MRI (<span class="m">B</span>) are measured with physiological and technical noise</strong> (<span class="m">ICC<sub>R</sub> &lt; 1</span>, <span class="m">ICC<sub>B</sub> &lt; 1</span>).</li>
+      </ul>
+      <p>
+        When you adjust for exact Age (<span class="m">C</span>)—which, by the <strong>Frisch–Waugh–Lovell (FWL) theorem</strong>, is identical to plotting the residuals of <span class="m">B</span> against the residuals of <span class="m">R</span> after removing <span class="m">C</span>—you strip away the age-related portion of the <em>true biological signal</em> in <span class="m">R*</span>, <strong>while leaving 100% of the retinal measurement noise <span class="m">&varepsilon;<sub>R</sub></span> behind</strong>. Even when Age affects the brain <em>purely</em> by causing microvascular disease (<span class="m">C* &rarr; U* &rarr; {R*, B*}</span>, with direct path <span class="m">&alpha; = 0</span>), dialling retinal reliability down to <span class="m">ICC<sub>R</sub> &approx; 0.30</span> flattens the FWL residual plot, kills the adjusted retina slope, and <strong>transfers the vascular effect onto Age</strong>!
+      </p>
+      <p>
+        Conversely, if you know the measurement error variance from a <strong>repeatability study</strong> (e.g., repeated scans in <span class="m">n</span> = 20–30 participants), an <strong>Errors-in-Variables (EIV) / SEM model</strong> reverses both biases—restoring the retina slope and shrinking the inflated Age slope—while honestly widening confidence intervals to reflect the cost of noise.
+      </p>
+    </div>
+
+    <div class="workbench">
+      <div class="preset-bar">
+        <span class="preset-label">Explore 4 Key Cases:</span>
+        <button class="preset active" type="button" data-p3="trap">3A · Effect Transfer onto Age (ICC_R = 0.30, Pure Vascular Ageing)</button>
+        <button class="preset" type="button" data-p3="ideal">3B · High-SNR Averaged Biomarker (k = 12, Signal Reclaimed)</button>
+        <button class="preset" type="button" data-p3="noisyconf">3C · Noisy Covariate (Single Clinic BP &rarr; Residual Confounding)</button>
+        <button class="preset" type="button" data-p3="screenoff">3D · Pure Common Cause Screened Off (Even at High SNR)</button>
+      </div>
+
+      <div class="wb-grid">
+        <div class="controls-box">
+          <div class="ctrl-group-title">1 · Causal Biology</div>
+          <div class="ctrl">
+            <label><span>Shared microvascular link (<span class="m">U* &rarr; R*, B*</span>)</span><output id="p3_vlu">1.00</output></label>
+            <input id="p3_lu" type="range" min="0" max="1.4" step="0.05" value="1.00">
+            <div class="ctrl-hint">Target biological signal beyond <span class="m">C*</span> (set to 0 for null true link).</div>
+          </div>
+          <div class="ctrl">
+            <label><span><span class="m">C* &rarr; U*</span> coupling (<span class="m">&gamma;</span>, e.g. Age &rarr; SVD)</span><output id="p3_vg">0.75</output></label>
+            <input id="p3_g" type="range" min="0" max="0.9" step="0.05" value="0.75">
+          </div>
+          <div class="ctrl">
+            <label><span>Direct <span class="m">C* &rarr; R*, B*</span> paths (<span class="m">&alpha;</span>)</span><output id="p3_va">0.00</output></label>
+            <input id="p3_a" type="range" min="0" max="1.2" step="0.05" value="0.00">
+            <div class="ctrl-hint">0 = Age acts purely via microvascular pathology <span class="m">U*</span>.</div>
+          </div>
+
+          <div class="ctrl-group-title">2 · Measurement Error &amp; Averaging</div>
+          <div class="ctrl">
+            <label><span>Retinal single-measure error (<span class="m">&sigma;<sub>&varepsilon;R</sub></span>)</span><output id="p3_ver">1.60</output></label>
+            <input id="p3_er" type="range" min="0.05" max="2.2" step="0.05" value="1.60">
+          </div>
+          <div class="ctrl">
+            <label><span>Within-eye repeats averaged (<span class="m">k</span>)</span><output id="p3_vk">1</output></label>
+            <input id="p3_k" type="range" min="1" max="16" step="1" value="1">
+          </div>
+          <div class="ctrl">
+            <label><span>Brain MRI error (<span class="m">&sigma;<sub>&varepsilon;B</sub></span>)</span><output id="p3_veb">0.85</output></label>
+            <input id="p3_eb" type="range" min="0.05" max="2.0" step="0.05" value="0.85">
+          </div>
+          <div class="ctrl">
+            <label><span>Covariate <span class="m">C</span> error (<span class="m">&sigma;<sub>&varepsilon;C</sub></span>, 0 = exact Age)</span><output id="p3_vec">0.00</output></label>
+            <input id="p3_ec" type="range" min="0.00" max="1.6" step="0.05" value="0.00">
+          </div>
+          <div class="ctrl">
+            <label><span>Cohort sample size (<span class="m">n</span>)</span><output id="p3_vn">160</output></label>
+            <input id="p3_n" type="range" min="60" max="800" step="20" value="160">
+          </div>
+
+          <div class="btn-row">
+            <button class="action primary" id="p3_resample" type="button">↻ New Cohort</button>
+            <button class="action" id="p3_mc" type="button">▶ Simulate 200 Studies</button>
+          </div>
+        </div>
+
+        <div class="vis-stack">
+          <div class="sem-card">
+            <h4>
+              <span>Full Structural &amp; Measurement Model</span>
+              <span id="p3_rel_badge" style="font-size:0.78rem;font-weight:700;color:var(--c-err)"></span>
+            </h4>
+            <svg id="p3_svg" class="sem-svg" viewBox="0 0 680 225" xmlns="http://www.w3.org/2000/svg"></svg>
+          </div>
+
+          <div class="two-plots">
+            <div class="plot-card">
+              <h4>Frisch–Waugh–Lovell Residual Plot (<span class="m">B</span> vs <span class="m">R</span> given <span class="m">C</span>)</h4>
+              <div class="plot-sub">Residualising noisy <span class="m">R</span> on exact <span class="m">C</span> strips shared signal while leaving 100% of <span class="m">&varepsilon;<sub>R</sub></span>.</div>
+              <canvas id="p3_c1" width="420" height="320"></canvas>
+            </div>
+            <div class="plot-card">
+              <h4>Effect Transfer: Retina (<span class="m">&beta;<sub>R</sub></span>) vs. Covariate / Age (<span class="m">&beta;<sub>C</sub></span>)</h4>
+              <div class="plot-sub">Drag <span class="m">&sigma;<sub>&varepsilon;R</sub></span> or <span class="m">k</span>: watch Naive Age steal the slope lost by noisy Retina (95% CIs).</div>
+              <canvas id="p3_c2" width="420" height="320"></canvas>
+            </div>
+          </div>
+
+          <div class="metrics-row">
+            <div class="metric">
+              <div class="m-label">Retinal Reliability Drop</div>
+              <div class="m-val" id="p3_iccdrop">0.30 &rarr; 0.17</div>
+              <div class="m-sub">Marginal ICC<sub>R</sub> &rarr; Cond. ICC<sub>R|C</sub></div>
+            </div>
+            <div class="metric">
+              <div class="m-label">True Latent Slopes (<span class="m">B* ~ R* + C*</span>)</div>
+              <div class="m-val" id="p3_btrue">+0.81</div>
+              <div class="m-sub" id="p3_ctrue">True Age β<sub>C</sub> = +0.14</div>
+            </div>
+            <div class="metric hl-err">
+              <div class="m-label">Naive Adjusted OLS (<span class="m">B ~ R + C</span>)</div>
+              <div class="m-val" id="p3_bols">+0.14</div>
+              <div class="m-sub" id="p3_pols">p = 0.20 · Age β<sub>C</sub> = +0.64</div>
+            </div>
+            <div class="metric hl-vasc">
+              <div class="m-label">EIV Disattenuated Model</div>
+              <div class="m-val" id="p3_beiv">+0.80</div>
+              <div class="m-sub" id="p3_peiv">95% CI · EIV Age β<sub>C</sub></div>
+            </div>
+          </div>
+
+          <div class="live-banner" id="p3_msg"></div>
+          <div class="live-banner warn" id="p3_mc_box" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+
+    <details class="drawer">
+      <summary>Optional Deeper Dive · Why the FWL residual plot fails, effect transfer onto Age, &amp; R (<code>lavaan</code>) code</summary>
+      <p>
+        By the <strong>Frisch–Waugh–Lovell (FWL) theorem</strong>, the multiple regression coefficient on <span class="m">R</span> in <code>B ~ R + C</code> is identical to the simple slope of residualised <span class="m">B<sub>res</sub></span> on residualised <span class="m">R<sub>res</sub></span> (left plot above). Suppose true retinal biology <span class="m">R*</span> correlates with exact Age <span class="m">C</span> at <span class="m">&rho; = <span class="rm">Corr</span>(R*, C)</span>, and observed <span class="m">R = R* + <span class="rm">e&#772;</span><sub>R</sub></span> has marginal reliability <span class="m"><span class="rm">ICC</span><sub>R</sub></span>. Residualising <span class="m">R</span> on exact Age subtracts <span class="m">&rho;<sup>2</sup></span> of the <em>true biological variance</em> from the horizontal axis while removing none of the random measurement noise, driving conditional reliability down to:
+      </p>
+      <div class="eq-block">
+        <span class="m"><span class="rm">ICC</span><sub>R | C</sub> = </span>
+        <span class="frac">
+          <span class="m">(1 &minus; &rho;<sup>2</sup>) &middot; <span class="rm">ICC</span><sub>R</sub></span>
+          <span class="m">1 &minus; &rho;<sup>2</sup> &middot; <span class="rm">ICC</span><sub>R</sub></span>
+        </span>
+        <span class="m"> &lt; <span class="rm">ICC</span><sub>R</sub></span>,
+        &emsp;
+        <span class="m">E[&beta;&#770;<sub>OLS, C</sub>] &minus; &beta;<sub>true, C</sub> = </span>
+        <span class="frac">
+          <span class="m"><span class="rm">Cov</span>(R*, C)</span>
+          <span class="m"><span class="rm">Var</span>(C)</span>
+        </span>
+        <span class="m"> &middot; &beta;<sub>true, R</sub> &middot; (1 &minus; <span class="rm">ICC</span><sub>R | C</sub>)</span>
+      </div>
+      <p>
+        Notice the second equation: <strong>every unit of slope that noisy <span class="m">R</span> loses (<span class="m">1 &minus; <span class="rm">ICC</span><sub>R|C</sub></span>) is systematically transferred onto exact Age (<span class="m">C</span>)</strong> in proportion to the regression of <span class="m">R*</span> on <span class="m">C</span>! At <span class="m"><span class="rm">ICC</span><sub>R</sub> = 0.30</span> (Preset 3A), conditional reliability collapses to <span class="m"><span class="rm">ICC</span><sub>R | C</sub> = 0.17</span>, wiping out &gt;80% of the retinal slope and inflating the Age coefficient ~4.5-fold. In R (<code>lavaan</code>), you can account for measurement error either using an external within-subject repeatability variance (Option A) or directly from replicate measurements within the cohort (Option B, which also propagates uncertainty in the error variance automatically):
+      </p>
+      <pre class="codeblock"><code>library(lavaan)
+
+# OPTION A: Using within-subject error variance sigma2_w from a repeatability study
+# (Prefer transporting within-subject variance sigma2_w rather than ICC, since ICC
+# depends on between-subject spread in the sample.)
+eiv_external &lt;- '
+  R_true =~ 1 * R_obs
+  R_obs  ~~ PRIOR_ERR * R_obs   # fix to empirical within-subject error variance (sigma2_w / k)
+  WMH ~ beta_retina * R_true + beta_age * Age
+  R_true ~ Age
+'
+fit_a &lt;- sem(sub("PRIOR_ERR", 0.42, eiv_external), data = df)
+
+# OPTION B: Even better — if >=2 replicate scans (R_1, R_2) are collected in the cohort,
+# estimate latent R_true and error variance jointly with full uncertainty propagation:
+eiv_replicates &lt;- '
+  R_true =~ 1 * R_1 + 1 * R_2
+  R_1 ~~ evar * R_1
+  R_2 ~~ evar * R_2
+  WMH ~ beta_retina * R_true + beta_age * Age
+  R_true ~ Age
+'
+fit_b &lt;- sem(eiv_replicates, data = df)
+summary(fit_b, ci = TRUE, standardized = TRUE)</code></pre>
+    </details>
+  </section>
+
+
+  <!-- =================================================================== -->
+  <!-- PART 4: ENGINEERING & ANALYTICAL SPECIFICATION OF AN IDEAL BIOMARKER-->
+  <!-- =================================================================== -->
+  <section class="chapter" id="part4" style="border-bottom:none">
+    <div class="prose">
+      <div class="eyebrow">Part 4 · Engineering &amp; Analytical Specification</div>
+      <h2>Designing—and Analysing—an Ideal Retinal Biomarker</h2>
+      <p>
+        Statistical disattenuation rescues bias, <strong>but it cannot manufacture information out of pure noise</strong>—as you saw in Part 3, when SNR is very low, honest disattenuated confidence intervals become too wide to be clinically useful in realistic sample sizes.
+      </p>
+      <p>
+        Conversely, why not simply scan everyone’s brain directly with dynamic contrast-enhanced MRI or PET? Because a biomarker’s real-world impact depends on an <strong>engineering specification</strong> that balances <em>biological proximity and measurement physics</em> against <em>speed, cost, convenience, availability, and invasiveness</em>. Explore how existing approaches compare against an aspirational “ideal” retinal biomarker below.
+      </p>
+    </div>
+
+    <div class="workbench">
+      <div class="preset-bar">
+        <span class="preset-label">Compare Modality Profiles:</span>
+        <button class="preset active" type="button" data-p4="ideal">Target: Ideal Next-Gen Retinal Biomarker</button>
+        <button class="preset" type="button" data-p4="retinopathy">Coarse Fundus Retinopathy (Dumitrascu 2018)</button>
+        <button class="preset" type="button" data-p4="static">Unaveraged Static Vessel Calibre</button>
+        <button class="preset" type="button" data-p4="ffa">Invasive Dye Angiography (FFA)</button>
+        <button class="preset" type="button" data-p4="mri">Reference Brain MRI / PET</button>
+      </div>
+
+      <div class="wb-grid">
+        <div class="controls-box">
+          <div class="ctrl-group-title">Interactive Specification Sliders</div>
+          <div class="ctrl">
+            <label><span>Biological relevance / proximity</span><output id="p4_v1">90%</output></label>
+            <input id="p4_s1" type="range" min="10" max="100" step="5" value="90">
+            <div class="ctrl-hint">Assays shared microvascular mechanism directly (isomorphism).</div>
+          </div>
+          <div class="ctrl">
+            <label><span>Spatial &amp; temporal resolution</span><output id="p4_v2">85%</output></label>
+            <input id="p4_s2" type="range" min="10" max="100" step="5" value="85">
+            <div class="ctrl-hint">Resolves dynamic reactivity or subtle barrier change well above pixel limits.</div>
+          </div>
+          <div class="ctrl">
+            <label><span>Precision &amp; within-eye averaging</span><output id="p4_v3">90%</output></label>
+            <input id="p4_s3" type="range" min="10" max="100" step="5" value="90">
+            <div class="ctrl-hint">Low technical noise via multi-cycle / multi-frame averaging (<span class="m">ICC</span> &gt; 0.85).</div>
+          </div>
+          <div class="ctrl">
+            <label><span>Sensitivity to early / drug change</span><output id="p4_v4">90%</output></label>
+            <input id="p4_s4" type="range" min="10" max="100" step="5" value="90">
+            <div class="ctrl-hint">Continuous functional readout rather than irreversible end-stage scar.</div>
+          </div>
+          <div class="ctrl">
+            <label><span>Speed &amp; patient convenience</span><output id="p4_v5">85%</output></label>
+            <input id="p4_s5" type="range" min="10" max="100" step="5" value="85">
+            <div class="ctrl-hint">Short (~5 min) capture; minimal patient burden.</div>
+          </div>
+          <div class="ctrl">
+            <label><span>Non-invasiveness &amp; repeatability</span><output id="p4_v6">95%</output></label>
+            <input id="p4_s6" type="range" min="10" max="100" step="5" value="95">
+            <div class="ctrl-hint">Safe to repeat within a visit and across longitudinal trial visits.</div>
+          </div>
+          <div class="ctrl">
+            <label><span>Low cost &amp; clinic availability</span><output id="p4_v7">80%</output></label>
+            <input id="p4_s7" type="range" min="10" max="100" step="5" value="80">
+            <div class="ctrl-hint">Scalable to multicentre trials and broad clinical settings.</div>
+          </div>
+        </div>
+
+        <div class="vis-stack">
+          <div class="two-plots">
+            <div class="plot-card">
+              <h4>7-Axis Engineering &amp; Translational Specification</h4>
+              <div class="plot-sub">Teal polygon = Selected profile · Dashed grey = Reference Brain MRI/PET</div>
+              <canvas id="p4_radar" width="430" height="340"></canvas>
+            </div>
+            <div class="plot-card" style="display:flex;flex-direction:column;justify-content:space-between">
+              <div>
+                <h4>Implied Study Performance &amp; Trade-Offs</h4>
+                <div class="plot-sub">How engineering choices translate into cohort analysis</div>
+                <div id="p4_summary" style="font-size:0.88rem;color:var(--ink-soft);line-height:1.55;margin-top:10px"></div>
+              </div>
+              <div class="metrics-row" style="margin-top:14px">
+                <div class="metric hl-vasc">
+                  <div class="m-label">Implied Effective <span class="m">ICC<sub>R</sub></span></div>
+                  <div class="m-val" id="p4_icc">0.88</div>
+                  <div class="m-sub" id="p4_nreq">Cohort N for 80% power: ~65</div>
+                </div>
+                <div class="metric">
+                  <div class="m-label">Practicality Index</div>
+                  <div class="m-val" id="p4_prac">87%</div>
+                  <div class="m-sub">Speed · Cost · Non-invasiveness</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="live-banner warn">
+            <strong>Even an ideal, zero-noise retinal biomarker still requires causal judgment:</strong> If a next-generation device achieves <span class="m">ICC<sub>R</sub> = 0.98</span>, its association with brain disease can <em>still</em> be wiped out if an analyst conditions on a direct marker of the sole common cause (<span class="m">R* &larr; Disease &rarr; B*</span>, Preset 3D), or distorted if the study selects patients on a downstream collider (such as hospital admission). High SNR and explicit DAG thinking are complements, never substitutes.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <h3>Practical Take-Home Checklist for Retinal Biomarker Studies</h3>
+    <div class="decision-grid">
+      <div class="d-card">
+        <span class="step-num">Step 1 · Graph First</span>
+        <h4>Draw the SEM Before Running Regression</h4>
+        <p>State explicitly what latent process (<span class="m">U*</span>) you think links the eye and brain, which observed variables have measurement error, and whether each candidate covariate blocks a non-target fork, screens off your target biology, or opens a selection collider.</p>
+      </div>
+      <div class="d-card">
+        <span class="step-num">Step 2 · Quantify Noise</span>
+        <h4>Measure Repeatability &amp; Average Within-Eye</h4>
+        <p>Run a dedicated test–retest repeatability study (<span class="m">n &approx; 15&ndash;30</span>) and check fellow-eye consistency before interpreting clinical regressions. Where physics allows, average <span class="m">k</span> repeated cycles or frames within an eye to shrink <span class="m">&sigma;<sub>&varepsilon;R</sub><sup>2</sup> / k</span>.</p>
+      </div>
+      <div class="d-card">
+        <span class="step-num">Step 3 · Adjust Specifics</span>
+        <h4>Control Specific Ocular Confounders</h4>
+        <p>Rather than relying on chronological age alone as a blunt, error-free proxy that steals shared vascular signal, measure and adjust directly for local ocular/physiological confounders (e.g., media opacity, image quality, OCT layer thickness, acute blood pressure).</p>
+      </div>
+      <div class="d-card">
+        <span class="step-num">Step 4 · Model the Error</span>
+        <h4>Disattenuate (or Use Within-Person Trial Designs)</h4>
+        <p>In observational mechanistic studies, plug empirical repeatability estimates into an Errors-in-Variables / SEM model so noisy retinal markers compete fairly against exact covariates. In short randomised trials, leverage within-person change (<span class="m">&Delta;Age = 0</span>) paired with high within-visit SNR.</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div>
+    <strong>Interactive Methods Tutorial</strong> · Designed for the Robert O. Curle Eyelab (University of Edinburgh) &amp; retinal imaging biomarker researchers.
+  </div>
+  <div>
+    Key references: Reichenbach (1956) · Dumitrascu et al. (<em>J Stroke Cerebrovasc Dis</em> 2018) · MacCormick et al. (<em>Alzheimers Dement DADM</em> 2022) · Cinelli, Forney &amp; Pearl (2022) · Fuller (<em>Measurement Error Models</em>, 1987).
+  </div>
+</footer>
+
+<script>
+(() => {
+  "use strict";
+
+  /* =========================================================================
+     THEME TOGGLE
+     ========================================================================= */
+  const themeBtn = document.getElementById("themeToggle");
+  themeBtn.addEventListener("click", () => {
+    const isDark = document.documentElement.classList.toggle("dark");
+    themeBtn.textContent = isDark ? "Light mode" : "Dark mode";
+    redrawAll();
+  });
+
+  function cssVar(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
+  /* =========================================================================
+     MATH & STATISTICAL HELPERS (Deterministic PRNG + Exact Linear Algebra)
+     ========================================================================= */
+  function mulberry32(seed) {
+    let a = seed >>> 0;
+    return function() {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function makeNormals(count, rng) {
+    const out = new Float64Array(count);
+    for (let i = 0; i < count; i += 2) {
+      let u = 0, v = 0;
+      while (u === 0) u = rng();
+      while (v === 0) v = rng();
+      const mag = Math.sqrt(-2.0 * Math.log(u));
+      out[i] = mag * Math.cos(2.0 * Math.PI * v);
+      if (i + 1 < count) out[i + 1] = mag * Math.sin(2.0 * Math.PI * v);
+    }
+    return out;
+  }
+
+  function mean(arr) {
+    let s = 0;
+    for (let i = 0; i < arr.length; i++) s += arr[i];
+    return s / arr.length;
+  }
+
+  function cov(a, b) {
+    const ma = mean(a), mb = mean(b), n = a.length;
+    let s = 0;
+    for (let i = 0; i < n; i++) s += (a[i] - ma) * (b[i] - mb);
+    return s / (n - 1);
+  }
+
+  function variance(a) { return cov(a, a); }
+
+  function corr(a, b) {
+    const va = variance(a), vb = variance(b);
+    if (va <= 1e-12 || vb <= 1e-12) return 0;
+    return cov(a, b) / Math.sqrt(va * vb);
+  }
+
+  function residualise(y, c) {
+    const vc = variance(c);
+    if (vc <= 1e-12) {
+      const my = mean(y);
+      return y.map(v => v - my);
+    }
+    const slope = cov(y, c) / vc;
+    const inter = mean(y) - slope * mean(c);
+    return y.map((v, i) => v - (inter + slope * c[i]));
+  }
+
+  // Approximate two-sided p-value from |z| or |t| (normal-t approximation accurate for df >= 30)
+  function twoSidedP(tStat, df) {
+    const x = Math.abs(tStat);
+    if (!isFinite(x)) return 1;
+    // Cornish-Fisher adjustment t -> z for finite df
+    const z = df > 4 ? x * (1 - 1 / (4 * df)) / Math.sqrt(1 + (x * x) / (2 * df)) : x;
+    const t = 1 / (1 + 0.2316419 * z);
+    const d = 0.3989422804 * Math.exp(-0.5 * z * z);
+    const prob = d * t * (0.31938153 + t * (-0.356563782 + t * (1.781477937 + t * (-1.821255978 + 1.330274429 * t))));
+    return Math.min(1, Math.max(0, 2 * prob));
+  }
+
+  function fmtP(p) {
+    if (p < 0.001) return "p < 0.001";
+    return "p = " + p.toFixed(3);
+  }
+
+  function fmtSigned(v, digits = 2) {
+    return (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(digits);
+  }
+
+  /* =========================================================================
+     SHARED CANVAS SCATTER PLOTTER
+     ========================================================================= */
+  function setupCanvas(canvas) {
+    const dpr = window.devicePixelRatio || 1;
+    const w = canvas.clientWidth || canvas.width;
+    const h = Math.round(w * (canvas.height / canvas.width));
+    canvas.width = w * dpr;
+    canvas.height = h * dpr;
+    const ctx = canvas.getContext("2d");
+    ctx.scale(dpr, dpr);
+    return { ctx, w, h };
+  }
+
+  function drawScatterPlot(canvas, opts) {
+    const { ctx, w, h } = setupCanvas(canvas);
+    const padL = 44, padR = 16, padT = 14, padB = 34;
+    const pw = w - padL - padR, ph = h - padT - padB;
+
+    ctx.fillStyle = cssVar("--plot-bg");
+    ctx.fillRect(0, 0, w, h);
+
+    // Coordinate bounds (fixed symmetric option or padded auto)
+    let [xmin, xmax] = opts.xRange || [-4, 4];
+    let [ymin, ymax] = opts.yRange || [-4, 4];
+    if (opts.expandToData && opts.x.length) {
+      for (let i = 0; i < opts.x.length; i++) {
+        if (opts.x[i] < xmin) xmin = opts.x[i] - 0.3;
+        if (opts.x[i] > xmax) xmax = opts.x[i] + 0.3;
+        if (opts.y[i] < ymin) ymin = opts.y[i] - 0.3;
+        if (opts.y[i] > ymax) ymax = opts.y[i] + 0.3;
+      }
+    }
+
+    const sx = v => padL + ((v - xmin) / (xmax - xmin)) * pw;
+    const sy = v => padT + ph - ((v - ymin) / (ymax - ymin)) * ph;
+
+    // Subtle gridlines
+    ctx.strokeStyle = cssVar("--plot-grid");
+    ctx.lineWidth = 1;
+    for (let g = Math.ceil(xmin); g <= Math.floor(xmax); g += 2) {
+      ctx.beginPath(); ctx.moveTo(sx(g), padT); ctx.lineTo(sx(g), padT + ph); ctx.stroke();
+    }
+    for (let g = Math.ceil(ymin); g <= Math.floor(ymax); g += 2) {
+      ctx.beginPath(); ctx.moveTo(padL, sy(g)); ctx.lineTo(padL + pw, sy(g)); ctx.stroke();
+    }
+
+    // Zero crosshairs
+    ctx.strokeStyle = cssVar("--line");
+    ctx.setLineDash([3, 3]);
+    if (xmin < 0 && xmax > 0) {
+      ctx.beginPath(); ctx.moveTo(sx(0), padT); ctx.lineTo(sx(0), padT + ph); ctx.stroke();
+    }
+    if (ymin < 0 && ymax > 0) {
+      ctx.beginPath(); ctx.moveTo(padL, sy(0)); ctx.lineTo(padL + pw, sy(0)); ctx.stroke();
+    }
+    ctx.setLineDash([]);
+
+    // Border axes
+    ctx.strokeStyle = cssVar("--plot-axis");
+    ctx.lineWidth = 1.1;
+    ctx.beginPath();
+    ctx.moveTo(padL, padT); ctx.lineTo(padL, padT + ph); ctx.lineTo(padL + pw, padT + ph);
+    ctx.stroke();
+
+    // Clip to plot interior
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(padL, padT, pw, ph);
+    ctx.clip();
+
+    // Optional latent truth + error displacement vectors
+    if (opts.ghostX && opts.ghostY) {
+      ctx.strokeStyle = cssVar("--ink-muted");
+      ctx.globalAlpha = 0.26;
+      ctx.lineWidth = 1;
+      const step = opts.x.length > 220 ? 2 : 1;
+      for (let i = 0; i < opts.x.length; i += step) {
+        ctx.beginPath();
+        ctx.moveTo(sx(opts.ghostX[i]), sy(opts.ghostY[i]));
+        ctx.lineTo(sx(opts.x[i]), sy(opts.y[i]));
+        ctx.stroke();
+      }
+      ctx.fillStyle = cssVar("--c-vasc");
+      ctx.globalAlpha = 0.42;
+      for (let i = 0; i < opts.x.length; i += step) {
+        ctx.beginPath();
+        ctx.arc(sx(opts.ghostX[i]), sy(opts.ghostY[i]), 2.3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    // Data points
+    const colArr = opts.colourBy;
+    let cMin = -2.2, cSpan = 4.4;
+    if (colArr) {
+      cMin = Math.min(...colArr);
+      cSpan = (Math.max(...colArr) - cMin) || 1;
+    }
+    const baseDot = cssVar("--c-ret");
+    for (let i = 0; i < opts.x.length; i++) {
+      if (colArr) {
+        const t = Math.max(0, Math.min(1, (colArr[i] - cMin) / cSpan));
+        const hue = Math.round(235 - t * 205); // indigo -> amber/coral
+        ctx.fillStyle = `hsla(${hue}, 78%, 54%, 0.78)`;
+      } else {
+        ctx.fillStyle = baseDot;
+        ctx.globalAlpha = 0.68;
+      }
+      ctx.beginPath();
+      ctx.arc(sx(opts.x[i]), sy(opts.y[i]), 3.1, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    // Fitted lines
+    if (opts.lines) {
+      for (const ln of opts.lines) {
+        ctx.strokeStyle = ln.color;
+        ctx.lineWidth = ln.width || 2.3;
+        ctx.setLineDash(ln.dash || []);
+        ctx.beginPath();
+        ctx.moveTo(sx(xmin), sy(ln.inter + ln.slope * xmin));
+        ctx.lineTo(sx(xmax), sy(ln.inter + ln.slope * xmax));
+        ctx.stroke();
+      }
+      ctx.setLineDash([]);
+    }
+    ctx.restore();
+
+    // Axis labels
+    ctx.fillStyle = cssVar("--ink-muted");
+    ctx.font = "600 11.5px Inter, system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(opts.xLabel || "", padL + pw / 2, h - 8);
+    ctx.save();
+    ctx.translate(13, padT + ph / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText(opts.yLabel || "", 0, 0);
+    ctx.restore();
+  }
+
+
+  /* =========================================================================
+     PART 1: COMMON CAUSES & ANALOGY (IDEALISED ERROR-FREE FORKS)
+     ========================================================================= */
+  let p1Seed = 104729;
+  let p1Colour = false;
+  let p1Base = null;
+
+  function p1BuildBase(n) {
+    const rng = mulberry32(p1Seed);
+    p1Base = {
+      n,
+      zC: makeNormals(n, rng),
+      zU: makeNormals(n, rng),
+      zR: makeNormals(n, rng),
+      zB: makeNormals(n, rng)
+    };
+  }
+
+  function renderP1SVG(aC, aU) {
+    const svg = document.getElementById("p1_svg");
+    const cOp = aC > 0.01 ? 1 : 0.2;
+    const uOp = aU > 0.01 ? 1 : 0.2;
+    const wC = (1.3 + aC * 1.4).toFixed(1);
+    const wU = (1.3 + aU * 1.4).toFixed(1);
+
+    svg.innerHTML = `
+      <defs>
+        <marker id="p1a_c" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+          <path d="M0,0 L7,3.5 L0,7 Z" fill="var(--c-cov)"/>
+        </marker>
+        <marker id="p1a_u" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+          <path d="M0,0 L7,3.5 L0,7 Z" fill="var(--c-vasc)"/>
+        </marker>
+        <marker id="p1a_m" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto">
+          <path d="M0,0 L7,3.5 L0,7 Z" fill="var(--ink-muted)"/>
+        </marker>
+      </defs>
+
+      <!-- Known Risk Factor C* -> measured [C] -->
+      <g opacity="${cOp}">
+        <line x1="205" y1="42" x2="118" y2="42" stroke="var(--c-cov)" stroke-width="1.8" marker-end="url(#p1a_c)"/>
+        <path d="M235,62 L185,126" stroke="var(--c-cov)" stroke-width="${wC}" fill="none" marker-end="url(#p1a_c)"/>
+        <path d="M268,62 L472,126" stroke="var(--c-cov)" stroke-width="${wC}" fill="none" marker-end="url(#p1a_c)"/>
+      </g>
+
+      <!-- Latent Microvascular Pathology U* -->
+      <g opacity="${uOp}">
+        <path d="M418,62 L205,128" stroke="var(--c-vasc)" stroke-width="${wU}" fill="none" marker-end="url(#p1a_u)"/>
+        <path d="M452,62 L500,126" stroke="var(--c-vasc)" stroke-width="${wU}" fill="none" marker-end="url(#p1a_u)"/>
+      </g>
+
+      <!--Measured box [C] conditioned on -->
+      <rect x="44" y="24" width="68" height="36" fill="var(--c-cov-bg)" stroke="var(--c-cov)" stroke-width="2"/>
+      <rect x="39" y="19" width="78" height="46" fill="none" stroke="var(--c-cov)" stroke-width="1.4" stroke-dasharray="4,3" rx="4"/>
+      <text x="78" y="46" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">C (Age)</text>
+
+      <!-- Latent C* -->
+      <ellipse cx="252" cy="42" rx="46" ry="22" fill="var(--c-cov-bg)" stroke="var(--c-cov)" stroke-width="2" opacity="${Math.max(0.45, cOp)}"/>
+      <text x="252" y="46" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">C*</text>
+
+      <!-- Latent U* -->
+      <ellipse cx="436" cy="42" rx="64" ry="22" fill="var(--c-vasc-bg)" stroke="var(--c-vasc)" stroke-width="2" opacity="${Math.max(0.45, uOp)}"/>
+      <text x="436" y="40" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--ink)">U* (SVD)</text>
+      <text x="436" y="54" text-anchor="middle" font-size="10" fill="var(--ink-muted)">unobserved</text>
+
+      <!-- Latent Retina R* and Brain B* -->
+      <ellipse cx="176" cy="148" rx="54" ry="23" fill="var(--c-ret-bg)" stroke="var(--c-ret)" stroke-width="2"/>
+      <text x="176" y="152" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">Retina R*</text>
+
+      <ellipse cx="508" cy="148" rx="54" ry="23" fill="var(--c-brn-bg)" stroke="var(--c-brn)" stroke-width="2"/>
+      <text x="508" y="152" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">Brain B*</text>
+
+      <!-- Local biological variation zeta -->
+      <line x1="84" y1="148" x2="116" y2="148" stroke="var(--ink-muted)" stroke-width="1.5" marker-end="url(#p1a_m)"/>
+      <text x="72" y="152" text-anchor="middle" font-size="12" font-style="italic" fill="var(--ink-muted)">ζ<tspan baseline-shift="sub" font-size="9">R</tspan></text>
+
+      <line x1="600" y1="148" x2="568" y2="148" stroke="var(--ink-muted)" stroke-width="1.5" marker-end="url(#p1a_m)"/>
+      <text x="612" y="152" text-anchor="middle" font-size="12" font-style="italic" fill="var(--ink-muted)">ζ<tspan baseline-shift="sub" font-size="9">B</tspan></text>
+
+      <!-- Explicit reminder: no direct arrow R* -> B* -->
+      <text x="342" y="153" text-anchor="middle" font-size="11.5" fill="var(--ink-muted)">no direct causal arrow (R* ↛ B*)</text>
+    `;
+  }
+
+  function updateP1() {
+    const aC = +document.getElementById("p1_c").value;
+    const aU = +document.getElementById("p1_u").value;
+    const sZ = +document.getElementById("p1_z").value;
+    const n  = +document.getElementById("p1_n").value;
+
+    document.getElementById("p1_vc").textContent = aC.toFixed(2);
+    document.getElementById("p1_vu").textContent = aU.toFixed(2);
+    document.getElementById("p1_vz").textContent = sZ.toFixed(2);
+    document.getElementById("p1_vn").textContent = n;
+
+    if (!p1Base || p1Base.n !== n) p1BuildBase(n);
+
+    const C = new Array(n), R = new Array(n), B = new Array(n);
+    for (let i = 0; i < n; i++) {
+      const c = p1Base.zC[i];
+      const u = p1Base.zU[i];
+      C[i] = c;
+      R[i] = aC * c + aU * u + sZ * p1Base.zR[i];
+      B[i] = aC * c + aU * u + sZ * p1Base.zB[i];
+    }
+
+    const Rres = residualise(R, C);
+    const Bres = residualise(B, C);
+
+    const rRaw = corr(R, B);
+    const rAdj = corr(Rres, Bres);
+    const bRaw = cov(B, R) / variance(R);
+    const bAdj = cov(Bres, Rres) / variance(Rres);
+
+    document.getElementById("p1_r").textContent = fmtSigned(rRaw, 2);
+    document.getElementById("p1_pr").textContent = fmtSigned(rAdj, 2);
+    document.getElementById("p1_b_raw").textContent = "Unadjusted slope: " + fmtSigned(bRaw, 2);
+    document.getElementById("p1_b_adj").textContent = "Adjusted slope: " + fmtSigned(bAdj, 2);
+
+    renderP1SVG(aC, aU);
+
+    const mRaw = mean(B) - bRaw * mean(R);
+    drawScatterPlot(document.getElementById("p1_c1"), {
+      x: R, y: B,
+      xRange: [-4.4, 4.4], yRange: [-4.4, 4.4], expandToData: true,
+      colourBy: p1Colour ? C : null,
+      lines: [{ slope: bRaw, inter: mRaw, color: cssVar("--c-brn"), width: 2.4 }],
+      xLabel: "Retinal State R*", yLabel: "Brain State B*"
+    });
+
+    drawScatterPlot(document.getElementById("p1_c2"), {
+      x: Rres, y: Bres,
+      xRange: [-4.4, 4.4], yRange: [-4.4, 4.4], expandToData: true,
+      colourBy: p1Colour ? C : null,
+      lines: [{ slope: bAdj, inter: 0, color: cssVar("--c-vasc"), width: 2.4 }],
+      xLabel: "Residual R* (after C)", yLabel: "Residual B* (after C)"
+    });
+
+    const msg = document.getElementById("p1_msg");
+    if (aC < 0.05 && aU < 0.05) {
+      msg.className = "live-banner";
+      msg.innerHTML = "<strong>Parallel independent organs:</strong> Neither systemic risk factor <em>C*</em> nor shared microvascular disease <em>U*</em> connects retina and brain. Both unadjusted and adjusted correlations hover near zero.";
+    } else if (aU < 0.08 && aC >= 0.05) {
+      msg.className = "live-banner warn";
+      msg.innerHTML = "<strong>Reichenbach screening-off:</strong> Retina and brain correlate marginally (<em>r</em> = " + fmtSigned(rRaw) + ") solely through <em>C*</em>. Conditioning on [C] blocks the fork (<em>R* &perp; B* | C</em>) and flattens the right-hand plot to ~0.";
+    } else {
+      msg.className = "live-banner";
+      msg.innerHTML = "<strong>Unblocked microvascular path (the Dumitrascu 2018 clue):</strong> Conditioning on [C] blocks <em>R* &larr; C* &rarr; B*</em>, yet a clear adjusted association remains (<em>r</em><sub>adj</sub> = " + fmtSigned(rAdj) + ") because the latent microvascular path <em>R* &larr; U* &rarr; B*</em> stays open.";
+    }
+  }
+
+  const p1Presets = {
+    dumitrascu:  { c: 0.80, u: 0.85, z: 0.80 },
+    ageonly:     { c: 1.15, u: 0.00, z: 0.80 },
+    independent: { c: 0.00, u: 0.00, z: 1.00 }
+  };
+  document.querySelectorAll("[data-p1]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("[data-p1]").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      const p = p1Presets[btn.dataset.p1];
+      document.getElementById("p1_c").value = p.c;
+      document.getElementById("p1_u").value = p.u;
+      document.getElementById("p1_z").value = p.z;
+      updateP1();
+    });
+  });
+  ["p1_c", "p1_u", "p1_z", "p1_n"].forEach(id => {
+    document.getElementById(id).addEventListener("input", () => {
+      document.querySelectorAll("[data-p1]").forEach(b => b.classList.remove("active"));
+      updateP1();
+    });
+  });
+  document.getElementById("p1_resample").addEventListener("click", () => {
+    p1Seed = (p1Seed + 7919) >>> 0;
+    p1BuildBase(+document.getElementById("p1_n").value);
+    updateP1();
+  });
+  document.getElementById("p1_col").addEventListener("click", e => {
+    p1Colour = !p1Colour;
+    e.currentTarget.textContent = p1Colour ? "Uniform point colour" : "Colour points by C*";
+    updateP1();
+  });
+
+
+  /* =========================================================================
+     PART 2: ERROR ON BOTH SIDES & WITHIN-EYE AVERAGING
+     ========================================================================= */
+  const P2_N = 180;
+  let p2Seed = 223007;
+  let p2ShowTruth = true;
+  let p2Base = null;
+
+  function p2BuildBase() {
+    const rng = mulberry32(p2Seed);
+    const eR = [];
+    for (let k = 0; k < 16; k++) eR.push(makeNormals(P2_N, rng));
+    p2Base = {
+      zU: makeNormals(P2_N, rng),
+      zR: makeNormals(P2_N, rng),
+      zB: makeNormals(P2_N, rng),
+      eR,
+      eB: makeNormals(P2_N, rng)
+    };
+  }
+
+  function renderP2SVG(lam, sigER, k, sigEB) {
+    const svg = document.getElementById("p2_svg");
+    const effER = sigER / Math.sqrt(k);
+    const wU = (1.4 + lam * 1.4).toFixed(1);
+    const wER = (1.1 + Math.min(2.2, effER) * 1.4).toFixed(1);
+    const wEB = (1.1 + Math.min(2.2, sigEB) * 1.4).toFixed(1);
+
+    svg.innerHTML = `
+      <defs>
+        <marker id="p2a_u" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="var(--c-vasc)"/></marker>
+        <marker id="p2a_r" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="var(--c-ret)"/></marker>
+        <marker id="p2a_b" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="var(--c-brn)"/></marker>
+        <marker id="p2a_e" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="var(--c-err)"/></marker>
+      </defs>
+
+      <!-- Latent U* -> R* and B* -->
+      <path d="M292,45 L210,88" stroke="var(--c-vasc)" stroke-width="${wU}" fill="none" marker-end="url(#p2a_u)"/>
+      <path d="M388,45 L470,88" stroke="var(--c-vasc)" stroke-width="${wU}" fill="none" marker-end="url(#p2a_u)"/>
+
+      <ellipse cx="340" cy="34" rx="68" ry="22" fill="var(--c-vasc-bg)" stroke="var(--c-vasc)" stroke-width="2"/>
+      <text x="340" y="38" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">Latent Disease U*</text>
+
+      <!-- Latent R* and B* -->
+      <ellipse cx="185" cy="104" rx="52" ry="20" fill="var(--c-ret-bg)" stroke="var(--c-ret)" stroke-width="2"/>
+      <text x="185" y="108" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--ink)">True R*</text>
+
+      <ellipse cx="495" cy="104" rx="52" ry="20" fill="var(--c-brn-bg)" stroke="var(--c-brn)" stroke-width="2"/>
+      <text x="495" y="108" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--ink)">True B*</text>
+
+      <!-- Measurement links R* -> [R] and B* -> [B] -->
+      <line x1="185" y1="125" x2="185" y2="148" stroke="var(--c-ret)" stroke-width="2" marker-end="url(#p2a_r)"/>
+      <line x1="495" y1="125" x2="495" y2="148" stroke="var(--c-brn)" stroke-width="2" marker-end="url(#p2a_b)"/>
+
+      <!-- Observed rectangles [R] and [B] -->
+      <rect x="131" y="152" width="108" height="30" fill="var(--c-ret-bg)" stroke="var(--c-ret)" stroke-width="2"/>
+      <text x="185" y="171" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--ink)">${k > 1 ? `Mean R (k=${k})` : "Measured R"}</text>
+
+      <rect x="441" y="152" width="108" height="30" fill="var(--c-brn-bg)" stroke="var(--c-brn)" stroke-width="2"/>
+      <text x="495" y="171" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--ink)">Measured B</text>
+
+      <!-- Error nodes on both sides -->
+      <g opacity="${effER > 0.02 ? 1 : 0.25}">
+        <circle cx="52" cy="167" r="18" fill="var(--c-err-bg)" stroke="var(--c-err)" stroke-width="1.8"/>
+        <text x="52" y="171" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--ink)">ε<tspan baseline-shift="sub" font-size="8.5">R</tspan>/√k</text>
+        <line x1="72" y1="167" x2="125" y2="167" stroke="var(--c-err)" stroke-width="${wER}" marker-end="url(#p2a_e)"/>
+      </g>
+
+      <g opacity="${sigEB > 0.02 ? 1 : 0.25}">
+        <circle cx="628" cy="167" r="18" fill="var(--c-err-bg)" stroke="var(--c-err)" stroke-width="1.8"/>
+        <text x="628" y="171" text-anchor="middle" font-size="11.5" font-weight="700" fill="var(--ink)">ε<tspan baseline-shift="sub" font-size="8.5">B</tspan></text>
+        <line x1="608" y1="167" x2="555" y2="167" stroke="var(--c-err)" stroke-width="${wEB}" marker-end="url(#p2a_e)"/>
+      </g>
+    `;
+  }
+
+  function updateP2() {
+    const lam   = +document.getElementById("p2_l").value;
+    const sigER = +document.getElementById("p2_er").value;
+    const k     = +document.getElementById("p2_k").value;
+    const sigEB = +document.getElementById("p2_eb").value;
+
+    document.getElementById("p2_vl").textContent = lam.toFixed(2);
+    document.getElementById("p2_ver").textContent = sigER.toFixed(2);
+    document.getElementById("p2_vk").textContent = k;
+    document.getElementById("p2_veb").textContent = sigEB.toFixed(2);
+
+    const effER = sigER / Math.sqrt(k);
+    document.getElementById("p2_eff_err").textContent =
+      `Effective retinal error SD (σ_εR / √${k}) = ${effER.toFixed(2)}`;
+
+    if (!p2Base) p2BuildBase();
+
+    const sigZeta = 0.65;
+    const Rstar = new Array(P2_N), Bstar = new Array(P2_N);
+    const Robs  = new Array(P2_N), Bobs  = new Array(P2_N);
+
+    for (let i = 0; i < P2_N; i++) {
+      const u = p2Base.zU[i];
+      const rs = lam * u + sigZeta * p2Base.zR[i];
+      const bs = lam * u + sigZeta * p2Base.zB[i];
+
+      // Average first k repeats within this eye
+      let errSum = 0;
+      for (let m = 0; m < k; m++) errSum += p2Base.eR[m][i];
+      const erAvg = sigER * (errSum / k); // SD = sigER / sqrt(k)
+
+      Rstar[i] = rs;
+      Bstar[i] = bs;
+      Robs[i]  = rs + erAvg;
+      Bobs[i]  = bs + sigEB * p2Base.eB[i];
+    }
+
+    const varRs = lam * lam + sigZeta * sigZeta;
+    const varBs = lam * lam + sigZeta * sigZeta;
+    const iccR = varRs / (varRs + effER * effER);
+    const iccB = varBs / (varBs + sigEB * sigEB);
+
+    const bTrue = cov(Bstar, Rstar) / variance(Rstar);
+    const rTrue = corr(Bstar, Rstar);
+    const bObs  = cov(Bobs, Robs) / variance(Robs);
+    const rObs  = corr(Bobs, Robs);
+
+    const retainedPct = bTrue > 0.01 ? Math.max(0, Math.round((bObs / bTrue) * 100)) : 0;
+
+    document.getElementById("p2_iccr").textContent = iccR.toFixed(2);
+    document.getElementById("p2_iccb").textContent = "Brain ICC_B: " + iccB.toFixed(2);
+    document.getElementById("p2_btrue").textContent = fmtSigned(bTrue, 2);
+    document.getElementById("p2_rtrue").textContent = "r_true = " + fmtSigned(rTrue, 2);
+    document.getElementById("p2_bobs").textContent = fmtSigned(bObs, 2);
+    document.getElementById("p2_robs").textContent = "r_obs = " + fmtSigned(rObs, 2);
+    document.getElementById("p2_atten").textContent = retainedPct + "%";
+
+    renderP2SVG(lam, sigER, k, sigEB);
+
+    drawScatterPlot(document.getElementById("p2_c1"), {
+      x: Robs, y: Bobs,
+      ghostX: p2ShowTruth ? Rstar : null,
+      ghostY: p2ShowTruth ? Bstar : null,
+      xRange: [-5.2, 5.2], yRange: [-5.2, 5.2], expandToData: true,
+      lines: [
+        { slope: bTrue, inter: mean(Bstar) - bTrue * mean(Rstar), color: cssVar("--c-vasc"), width: 2.3, dash: [6, 4] },
+        { slope: bObs,  inter: mean(Bobs) - bObs * mean(Robs),   color: cssVar("--c-err"),  width: 2.8 }
+      ],
+      xLabel: "Retinal Biomarker (R)", yLabel: "Brain Disease Marker (B)"
+    });
+
+    const msg = document.getElementById("p2_msg");
+    if (iccR < 0.4) {
+      msg.className = "live-banner warn";
+      msg.innerHTML = `<strong>Severe regression dilution:</strong> With retinal reliability at <strong>ICC<sub>R</sub> = ${iccR.toFixed(2)}</strong>, horizontal noise flattens the observed regression slope from <strong>${bTrue.toFixed(2)}</strong> down to <strong>${bObs.toFixed(2)}</strong> (retaining only ${retainedPct}% of the true slope). Try dragging <em>Within-eye averaged repeats (k)</em> up to 10–12 to watch horizontal noise contract!`;
+    } else if (sigEB > 1.5 && iccR >= 0.7) {
+      msg.className = "live-banner";
+      msg.innerHTML = `<strong>Asymmetry of X vs. Y error:</strong> Retinal reliability is high (ICC<sub>R</sub> = ${iccR.toFixed(2)}), so the regression <em>slope</em> stays close to truth (${bObs.toFixed(2)} vs ${bTrue.toFixed(2)}), even though high vertical brain MRI noise shrinks the correlation <em>r</em> from ${rTrue.toFixed(2)} to ${rObs.toFixed(2)}.`;
+    } else {
+      msg.className = "live-banner";
+      msg.innerHTML = `<strong>High-SNR regime:</strong> At <strong>ICC<sub>R</sub> = ${iccR.toFixed(2)}</strong> (${k > 1 ? `averaging k = ${k} repeats within each eye` : "low single-measurement error"}), the observed slope (${bObs.toFixed(2)}) tracks the true underlying tissue relationship (${bTrue.toFixed(2)}) closely.`;
+    }
+  }
+
+  const p2Presets = {
+    lowsnr:      { l: 0.75, er: 1.85, k: 1,  eb: 1.00 },
+    moderate:    { l: 0.85, er: 1.15, k: 1,  eb: 0.90 },
+    averaged:    { l: 0.95, er: 1.15, k: 12, eb: 0.75 },
+    changescore: { l: 0.55, er: 1.65, k: 1,  eb: 1.45 }
+  };
+  document.querySelectorAll("[data-p2]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("[data-p2]").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      const p = p2Presets[btn.dataset.p2];
+      document.getElementById("p2_l").value  = p.l;
+      document.getElementById("p2_er").value = p.er;
+      document.getElementById("p2_k").value  = p.k;
+      document.getElementById("p2_eb").value = p.eb;
+      updateP2();
+    });
+  });
+  ["p2_l", "p2_er", "p2_k", "p2_eb"].forEach(id => {
+    document.getElementById(id).addEventListener("input", () => {
+      document.querySelectorAll("[data-p2]").forEach(b => b.classList.remove("active"));
+      updateP2();
+    });
+  });
+  document.getElementById("p2_overlay").addEventListener("click", e => {
+    p2ShowTruth = !p2ShowTruth;
+    e.currentTarget.textContent = p2ShowTruth
+      ? "Hide Latent Truth & Error Vectors"
+      : "Show Latent Truth (R*, B*) & Error Vectors";
+    updateP2();
+  });
+  document.getElementById("p2_resample").addEventListener("click", () => {
+    p2Seed = (p2Seed + 12953) >>> 0;
+    p2BuildBase();
+    updateP2();
+  });
+
+
+  /* =========================================================================
+     PART 3: MULTIVARIABLE ADJUSTMENT + ERRORS-IN-VARIABLES DISATTENUATION
+     ========================================================================= */
+  let p3Seed = 514229;
+  let p3Base = null;
+
+  function p3BuildBase(n) {
+    const rng = mulberry32(p3Seed);
+    const eR = [];
+    for (let k = 0; k < 16; k++) eR.push(makeNormals(n, rng));
+    p3Base = {
+      n,
+      zC: makeNormals(n, rng),
+      zU: makeNormals(n, rng),
+      zR: makeNormals(n, rng),
+      zB: makeNormals(n, rng),
+      eR,
+      eB: makeNormals(n, rng),
+      eC: makeNormals(n, rng)
+    };
+  }
+
+  // Fit Naive OLS and Fuller (1987) Errors-in-Variables regression on B ~ R + C
+  function fitModels(R, C, B, errVarR, errVarC) {
+    const n = R.length;
+    const sRR = variance(R), sCC = variance(C), sRC = cov(R, C);
+    const sRB = cov(R, B),   sCB = cov(C, B),   sBB = variance(B);
+
+    // 1. Unadjusted OLS: B ~ R
+    const bUnadj = sRB / sRR;
+    const resVarUnadj = Math.max(1e-8, (sBB - bUnadj * sRB) * ((n - 1) / (n - 2)));
+    const seUnadj = Math.sqrt(resVarUnadj / ((n - 1) * sRR));
+
+    // 2. Naive Multivariable OLS: B ~ R + C
+    const detS = sRR * sCC - sRC * sRC;
+    const invS00 =  sCC / detS, invS01 = -sRC / detS, invS11 = sRR / detS;
+    const bOLS_R = invS00 * sRB + invS01 * sCB;
+    const bOLS_C = invS01 * sRB + invS11 * sCB;
+
+    const mR = mean(R), mC = mean(C), mB = mean(B);
+    let rssOLS = 0;
+    for (let i = 0; i < n; i++) {
+      const rHat = bOLS_R * (R[i] - mR) + bOLS_C * (C[i] - mC);
+      const e = (B[i] - mB) - rHat;
+      rssOLS += e * e;
+    }
+    const sig2OLS = rssOLS / (n - 3);
+    const seOLS_R = Math.sqrt((sig2OLS / (n - 1)) * invS00);
+    const seOLS_C = Math.sqrt((sig2OLS / (n - 1)) * invS11);
+    const pOLS_R  = twoSidedP(bOLS_R / seOLS_R, n - 3);
+    const pOLS_C  = twoSidedP(bOLS_C / seOLS_C, n - 3);
+
+    // 3. Errors-in-Variables (Fuller 1987 modified Moment Estimator, repeatability df m = 30)
+    let hRR = sRR - errVarR;
+    let hCC = sCC - errVarC;
+    let hRC = sRC;
+    let detH = hRR * hCC - hRC * hRC;
+    let unstable = false;
+
+    // Fuller small-sample positive-definiteness modification when sample covariance - error approaches boundary
+    const minDet = 0.04 * detS;
+    if (hRR <= 0.04 * sRR || hCC <= 0.04 * sCC || detH <= minDet) {
+      unstable = true;
+      // Find largest shrinkage factor alpha in (0, 1) keeping H well-conditioned
+      let lo = 0, hi = 1;
+      for (let it = 0; it < 24; it++) {
+        const mid = 0.5 * (lo + hi);
+        const trR = sRR - mid * errVarR;
+        const trC = sCC - mid * errVarC;
+        if (trR > 0.05 * sRR && trC > 0.05 * sCC && (trR * trC - hRC * hRC) > minDet) lo = mid;
+        else hi = mid;
+      }
+      hRR = sRR - lo * errVarR;
+      hCC = sCC - lo * errVarC;
+      detH = hRR * hCC - hRC * hRC;
+    }
+
+    const invH00 =  hCC / detH, invH01 = -hRC / detH, invH11 = hRR / detH;
+    const bEIV_R = invH00 * sRB + invH01 * sCB;
+    const bEIV_C = invH01 * sRB + invH11 * sCB;
+
+    let sumV2 = 0;
+    for (let i = 0; i < n; i++) {
+      const v = (B[i] - mB) - bEIV_R * (R[i] - mR) - bEIV_C * (C[i] - mC);
+      sumV2 += v * v;
+    }
+    const sVV = sumV2 / (n - 3);
+
+    // Fuller (1987, Theorem 1.2.1) sandwich variance for known error covariance
+    const q0 = errVarR * bEIV_R;
+    const q1 = errVarC * bEIV_C;
+    const M00 = sRR * sVV + q0 * q0;
+    const M01 = sRC * sVV + q0 * q1;
+    const M11 = sCC * sVV + q1 * q1;
+
+    const varEIV_R = (1 / n) * (
+      invH00 * (M00 * invH00 + M01 * invH01) +
+      invH01 * (M01 * invH00 + M11 * invH01)
+    );
+    const varEIV_C = (1 / n) * (
+      invH01 * (M00 * invH01 + M01 * invH11) +
+      invH11 * (M01 * invH01 + M11 * invH11)
+    );
+    const seEIV_R = Math.sqrt(Math.max(1e-8, varEIV_R));
+    const seEIV_C = Math.sqrt(Math.max(1e-8, varEIV_C));
+    const pEIV_R  = twoSidedP(bEIV_R / seEIV_R, n - 3);
+
+    return {
+      bUnadj, seUnadj,
+      bOLS_R, seOLS_R, pOLS_R,
+      bOLS_C, seOLS_C, pOLS_C,
+      bEIV_R, seEIV_R, pEIV_R,
+      bEIV_C, seEIV_C, unstable
+    };
+  }
+
+  function renderP3SVG(lu, gam, alpha, effER, sigEB, sigEC) {
+    const svg = document.getElementById("p3_svg");
+    const uOp = lu > 0.01 ? 1 : 0.22;
+    const gOp = (lu > 0.01 && gam > 0.01) ? 1 : 0.18;
+    const aOp = alpha > 0.01 ? 1 : 0.18;
+
+    svg.innerHTML = `
+      <defs>
+        <marker id="p3a_c" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="var(--c-cov)"/></marker>
+        <marker id="p3a_u" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="var(--c-vasc)"/></marker>
+        <marker id="p3a_r" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="var(--c-ret)"/></marker>
+        <marker id="p3a_b" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="var(--c-brn)"/></marker>
+        <marker id="p3a_e" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="var(--c-err)"/></marker>
+      </defs>
+
+      <!-- Covariate C* -> [C] -->
+      <line x1="178" y1="42" x2="118" y2="42" stroke="var(--c-cov)" stroke-width="2" marker-end="url(#p3a_c)"/>
+      <rect x="38" y="24" width="74" height="34" fill="var(--c-cov-bg)" stroke="var(--c-cov)" stroke-width="2"/>
+      <rect x="33" y="19" width="84" height="44" fill="none" stroke="var(--c-cov)" stroke-width="1.3" stroke-dasharray="4,3" rx="4"/>
+      <text x="75" y="45" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--ink)">Meas. C</text>
+
+      <!-- Covariate error e_C -->
+      <g opacity="${sigEC > 0.01 ? 1 : 0.25}">
+        <circle cx="75" cy="96" r="15" fill="var(--c-err-bg)" stroke="var(--c-err)" stroke-width="1.6"/>
+        <text x="75" y="100" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--ink)">ε<tspan baseline-shift="sub" font-size="8">C</tspan></text>
+        <line x1="75" y1="80" x2="75" y2="62" stroke="var(--c-err)" stroke-width="1.6" marker-end="url(#p3a_e)"/>
+      </g>
+
+      <ellipse cx="232" cy="42" rx="48" ry="21" fill="var(--c-cov-bg)" stroke="var(--c-cov)" stroke-width="2"/>
+      <text x="232" y="46" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--ink)">True C*</text>
+
+      <!-- C* -> U* -->
+      <line x1="282" y1="42" x2="365" y2="42" stroke="var(--c-cov)" stroke-width="${(1.3 + gam * 2).toFixed(1)}" opacity="${gOp}" marker-end="url(#p3a_c)"/>
+
+      <!-- Direct C* -> R*, B* -->
+      <g opacity="${aOp}">
+        <path d="M218,62 L188,108" stroke="var(--c-cov)" stroke-width="${(1.1 + alpha * 1.5).toFixed(1)}" fill="none" marker-end="url(#p3a_c)"/>
+        <path d="M258,60 L465,112" stroke="var(--c-cov)" stroke-width="${(1.1 + alpha * 1.5).toFixed(1)}" fill="none" marker-end="url(#p3a_c)"/>
+      </g>
+
+      <!-- Latent U* -> R*, B* -->
+      <ellipse cx="436" cy="42" rx="64" ry="21" fill="var(--c-vasc-bg)" stroke="var(--c-vasc)" stroke-width="2" opacity="${Math.max(0.4, uOp)}"/>
+      <text x="436" y="46" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--ink)">Latent U* (SVD)</text>
+
+      <g opacity="${uOp}">
+        <path d="M402,60 L215,112" stroke="var(--c-vasc)" stroke-width="${(1.3 + lu * 1.8).toFixed(1)}" fill="none" marker-end="url(#p3a_u)"/>
+        <path d="M456,62 L494,108" stroke="var(--c-vasc)" stroke-width="${(1.3 + lu * 1.8).toFixed(1)}" fill="none" marker-end="url(#p3a_u)"/>
+      </g>
+
+      <!-- Latent R*, B* -->
+      <ellipse cx="182" cy="128" rx="48" ry="19" fill="var(--c-ret-bg)" stroke="var(--c-ret)" stroke-width="2"/>
+      <text x="182" y="132" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">True R*</text>
+
+      <ellipse cx="504" cy="128" rx="48" ry="19" fill="var(--c-brn-bg)" stroke="var(--c-brn)" stroke-width="2"/>
+      <text x="504" y="132" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">True B*</text>
+
+      <!-- Measured [R] and [B] -->
+      <line x1="182" y1="148" x2="182" y2="174" stroke="var(--c-ret)" stroke-width="2" marker-end="url(#p3a_r)"/>
+      <rect x="132" y="178" width="100" height="30" fill="var(--c-ret-bg)" stroke="var(--c-ret)" stroke-width="2"/>
+      <text x="182" y="197" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">Meas. R</text>
+
+      <line x1="504" y1="148" x2="504" y2="174" stroke="var(--c-brn)" stroke-width="2" marker-end="url(#p3a_b)"/>
+      <rect x="454" y="178" width="100" height="30" fill="var(--c-brn-bg)" stroke="var(--c-brn)" stroke-width="2"/>
+      <text x="504" y="197" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">Meas. B</text>
+
+      <!-- Error nodes e_R and e_B -->
+      <circle cx="62" cy="193" r="16" fill="var(--c-err-bg)" stroke="var(--c-err)" stroke-width="1.7"/>
+      <text x="62" y="197" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--ink)">ε<tspan baseline-shift="sub" font-size="8">R</tspan>/√k</text>
+      <line x1="80" y1="193" x2="126" y2="193" stroke="var(--c-err)" stroke-width="${(1.1 + Math.min(2, effER) * 1.4).toFixed(1)}" marker-end="url(#p3a_e)"/>
+
+      <circle cx="622" cy="193" r="16" fill="var(--c-err-bg)" stroke="var(--c-err)" stroke-width="1.7"/>
+      <text x="622" y="197" text-anchor="middle" font-size="10.5" font-weight="700" fill="var(--ink)">ε<tspan baseline-shift="sub" font-size="8">B</tspan></text>
+      <line x1="604" y1="193" x2="560" y2="193" stroke="var(--c-err)" stroke-width="${(1.1 + Math.min(2, sigEB) * 1.4).toFixed(1)}" marker-end="url(#p3a_e)"/>
+    `;
+  }
+
+  function drawForestPlot(canvas, pop, fit) {
+    const { ctx, w, h } = setupCanvas(canvas);
+    ctx.fillStyle = cssVar("--plot-bg");
+    ctx.fillRect(0, 0, w, h);
+
+    const padL = 132, padR = 18, padT = 18, padB = 34;
+    const pw = w - padL - padR, ph = h - padT - padB;
+
+    const rows = [
+      // Top group: Retinal Biomarker Slope (beta_R)
+      { label: "Retina: True β_R",   est: pop.bTrue_R, lo: pop.bTrue_R,                  hi: pop.bTrue_R,                  col: cssVar("--c-ret"),  isPoint: true, bold: true },
+      { label: "Retina: Naive OLS",  est: fit.bOLS_R,  lo: fit.bOLS_R - 1.96*fit.seOLS_R, hi: fit.bOLS_R + 1.96*fit.seOLS_R, col: cssVar("--c-err"),  bold: true },
+      { label: "Retina: EIV Model",  est: fit.bEIV_R,  lo: fit.bEIV_R - 1.96*fit.seEIV_R, hi: fit.bEIV_R + 1.96*fit.seEIV_R, col: cssVar("--c-vasc"), bold: true },
+      // Bottom group: Covariate C / Age Slope (beta_C)
+      { label: "Age (C): True β_C",  est: pop.bTrue_C, lo: pop.bTrue_C,                  hi: pop.bTrue_C,                  col: cssVar("--c-cov"),  isPoint: true, bold: true },
+      { label: "Age (C): Naive OLS", est: fit.bOLS_C,  lo: fit.bOLS_C - 1.96*fit.seOLS_C, hi: fit.bOLS_C + 1.96*fit.seOLS_C, col: cssVar("--c-err"),  bold: true },
+      { label: "Age (C): EIV Model", est: fit.bEIV_C,  lo: fit.bEIV_C - 1.96*fit.seEIV_C, hi: fit.bEIV_C + 1.96*fit.seEIV_C, col: cssVar("--c-vasc"), bold: false }
+    ];
+
+    let xmin = -0.35, xmax = 1.25;
+    for (const r of rows) {
+      if (r.lo < xmin) xmin = Math.max(-1.6, r.lo - 0.08);
+      if (r.hi > xmax) xmax = Math.min(2.2, r.hi + 0.08);
+    }
+    const sx = v => padL + ((v - xmin) / (xmax - xmin)) * pw;
+    const midY = padT + ph * 0.5;
+
+    // Subtle shaded background for bottom group so the two predictors are visually distinct
+    ctx.fillStyle = cssVar("--surface-2");
+    ctx.globalAlpha = 0.55;
+    ctx.fillRect(4, midY, w - 8, ph * 0.5);
+    ctx.globalAlpha = 1;
+
+    // Gridlines
+    ctx.strokeStyle = cssVar("--plot-grid");
+    ctx.lineWidth = 1;
+    for (let g = -1.5; g <= 2.0; g += 0.5) {
+      if (g >= xmin && g <= xmax) {
+        ctx.beginPath(); ctx.moveTo(sx(g), padT); ctx.lineTo(sx(g), padT + ph); ctx.stroke();
+      }
+    }
+
+    // Horizontal divider between Retina (top 3 rows) and Age/Covariate (bottom 3 rows)
+    ctx.strokeStyle = cssVar("--line-strong");
+    ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.moveTo(8, midY); ctx.lineTo(padL + pw, midY); ctx.stroke();
+
+    // Zero null line
+    ctx.strokeStyle = cssVar("--plot-axis");
+    ctx.lineWidth = 1.3;
+    ctx.beginPath(); ctx.moveTo(sx(0), padT); ctx.lineTo(sx(0), padT + ph); ctx.stroke();
+
+    // True benchmark vertical dashed lines (top half = True Retina, bottom half = True Age)
+    ctx.setLineDash([4, 3]);
+    ctx.lineWidth = 1.4;
+    ctx.strokeStyle = cssVar("--c-ret");
+    ctx.beginPath(); ctx.moveTo(sx(pop.bTrue_R), padT); ctx.lineTo(sx(pop.bTrue_R), midY); ctx.stroke();
+    ctx.strokeStyle = cssVar("--c-cov");
+    ctx.beginPath(); ctx.moveTo(sx(pop.bTrue_C), midY); ctx.lineTo(sx(pop.bTrue_C), padT + ph); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Draw rows
+    const rowH = ph / rows.length;
+    rows.forEach((r, idx) => {
+      const cy = padT + (idx + 0.5) * rowH;
+
+      ctx.fillStyle = cssVar("--ink-soft");
+      ctx.font = r.bold ? "700 11px Inter, system-ui, sans-serif" : "500 11px Inter, system-ui, sans-serif";
+      ctx.textAlign = "right";
+      ctx.textBaseline = "middle";
+      ctx.fillText(r.label, padL - 10, cy);
+
+      ctx.save();
+      ctx.beginPath(); ctx.rect(padL, padT, pw, ph); ctx.clip();
+
+      if (!r.isPoint) {
+        ctx.strokeStyle = r.col;
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(sx(r.lo), cy);
+        ctx.lineTo(sx(r.hi), cy);
+        ctx.stroke();
+
+        ctx.lineWidth = 1.7;
+        ctx.beginPath();
+        ctx.moveTo(sx(r.lo), cy - 4.5); ctx.lineTo(sx(r.lo), cy + 4.5);
+        ctx.moveTo(sx(r.hi), cy - 4.5); ctx.lineTo(sx(r.hi), cy + 4.5);
+        ctx.stroke();
+      }
+
+      ctx.fillStyle = r.col;
+      ctx.beginPath();
+      if (r.isPoint) {
+        const x0 = sx(r.est);
+        ctx.moveTo(x0, cy - 5.5); ctx.lineTo(x0 + 5.5, cy); ctx.lineTo(x0, cy + 5.5); ctx.lineTo(x0 - 5.5, cy);
+        ctx.closePath();
+      } else {
+        ctx.arc(sx(r.est), cy, 4.2, 0, Math.PI * 2);
+      }
+      ctx.fill();
+      ctx.restore();
+    });
+
+    // Bottom axis ticks
+    ctx.strokeStyle = cssVar("--plot-axis");
+    ctx.beginPath(); ctx.moveTo(padL, padT + ph); ctx.lineTo(padL + pw, padT + ph); ctx.stroke();
+    ctx.fillStyle = cssVar("--ink-muted");
+    ctx.font = "500 10.5px Inter, system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    for (let g = -1.5; g <= 2.0; g += 0.5) {
+      if (g >= xmin + 0.05 && g <= xmax - 0.05) {
+        ctx.fillText(g.toFixed(1), sx(g), padT + ph + 5);
+      }
+    }
+    ctx.font = "600 11px Inter, system-ui, sans-serif";
+    ctx.fillText("Multivariable Regression Slope (95% CI)", padL + pw / 2, h - 13);
+  }
+
+  function getP3Params() {
+    return {
+      lu:    +document.getElementById("p3_lu").value,
+      gam:   +document.getElementById("p3_g").value,
+      alpha: +document.getElementById("p3_a").value,
+      sigER: +document.getElementById("p3_er").value,
+      k:     +document.getElementById("p3_k").value,
+      sigEB: +document.getElementById("p3_eb").value,
+      sigEC: +document.getElementById("p3_ec").value,
+      n:     +document.getElementById("p3_n").value,
+      sigZeta: 0.32
+    };
+  }
+
+  function computeP3Population(p) {
+    const effER = p.sigER / Math.sqrt(p.k);
+    const varU_given_C = 1 - p.gam * p.gam;
+    // Marginal variance of R*: R* = (lu*gam + alpha)*C* + lu*sqrt(1-gam^2)*zU + sigZeta*zR
+    const cCoef = p.lu * p.gam + p.alpha;
+    const varRs = cCoef * cCoef + p.lu * p.lu * varU_given_C + p.sigZeta * p.sigZeta;
+    const varRs_condC = p.lu * p.lu * varU_given_C + p.sigZeta * p.sigZeta;
+    const covRBs_condC = p.lu * p.lu * varU_given_C;
+    const bTrue_R = covRBs_condC / varRs_condC;
+    const bTrue_C = cCoef * (1 - bTrue_R);
+
+    const iccR = varRs / (varRs + effER * effER);
+    const iccR_condC = varRs_condC / (varRs_condC + effER * effER);
+    return { effER, bTrue: bTrue_R, bTrue_R, bTrue_C, iccR, iccR_condC };
+  }
+
+  function updateP3(hideMC = true) {
+    if (hideMC) document.getElementById("p3_mc_box").style.display = "none";
+    const p = getP3Params();
+
+    document.getElementById("p3_vlu").textContent = p.lu.toFixed(2);
+    document.getElementById("p3_vg").textContent  = p.gam.toFixed(2);
+    document.getElementById("p3_va").textContent  = p.alpha.toFixed(2);
+    document.getElementById("p3_ver").textContent = p.sigER.toFixed(2);
+    document.getElementById("p3_vk").textContent  = p.k;
+    document.getElementById("p3_veb").textContent = p.sigEB.toFixed(2);
+    document.getElementById("p3_vec").textContent = p.sigEC.toFixed(2);
+    document.getElementById("p3_vn").textContent  = p.n;
+
+    if (!p3Base || p3Base.n !== p.n) p3BuildBase(p.n);
+
+    const pop = computeP3Population(p);
+    const uScale = Math.sqrt(1 - p.gam * p.gam);
+
+    const R = new Array(p.n), C = new Array(p.n), B = new Array(p.n);
+    for (let i = 0; i < p.n; i++) {
+      const cs = p3Base.zC[i];
+      const us = p.gam * cs + uScale * p3Base.zU[i];
+      const rs = p.lu * us + p.alpha * cs + p.sigZeta * p3Base.zR[i];
+      const bs = p.lu * us + p.alpha * cs + p.sigZeta * p3Base.zB[i];
+
+      let errSum = 0;
+      for (let m = 0; m < p.k; m++) errSum += p3Base.eR[m][i];
+      const erAvg = p.sigER * (errSum / p.k);
+
+      R[i] = rs + erAvg;
+      B[i] = bs + p.sigEB * p3Base.eB[i];
+      C[i] = cs + p.sigEC * p3Base.eC[i];
+    }
+
+    const fit = fitModels(R, C, B, pop.effER * pop.effER, p.sigEC * p.sigEC);
+
+    // Frisch-Waugh-Lovell Adjusted residual plot
+    const Rres = residualise(R, C);
+    const Bres = residualise(B, C);
+
+    renderP3SVG(p.lu, p.gam, p.alpha, pop.effER, p.sigEB, p.sigEC);
+    drawScatterPlot(document.getElementById("p3_c1"), {
+      x: Rres, y: Bres,
+      xRange: [-4.5, 4.5], yRange: [-4.5, 4.5], expandToData: true,
+      lines: [
+        { slope: pop.bTrue_R, inter: 0, color: cssVar("--ink-muted"), width: 1.8, dash: [2, 3] },
+        { slope: fit.bEIV_R,  inter: 0, color: cssVar("--c-vasc"),    width: 2.4, dash: [7, 4] },
+        { slope: fit.bOLS_R,  inter: 0, color: cssVar("--c-err"),     width: 2.7 }
+      ],
+      xLabel: "FWL Residual R (after C)", yLabel: "FWL Residual B (after C)"
+    });
+
+    drawForestPlot(document.getElementById("p3_c2"), pop, fit);
+
+    document.getElementById("p3_rel_badge").textContent =
+      `Marginal ICC_R = ${pop.iccR.toFixed(2)} → Conditional ICC_R|C = ${pop.iccR_condC.toFixed(2)}`;
+    document.getElementById("p3_iccdrop").textContent =
+      `${pop.iccR.toFixed(2)} → ${pop.iccR_condC.toFixed(2)}`;
+    document.getElementById("p3_btrue").textContent = `Retina ${fmtSigned(pop.bTrue_R, 2)}`;
+    document.getElementById("p3_ctrue").textContent = `True Age β_C = ${fmtSigned(pop.bTrue_C, 2)}`;
+    document.getElementById("p3_bols").textContent  = `Retina ${fmtSigned(fit.bOLS_R, 2)}`;
+    document.getElementById("p3_pols").textContent  = `${fmtP(fit.pOLS_R)} · Age β_C = ${fmtSigned(fit.bOLS_C, 2)}`;
+    document.getElementById("p3_beiv").textContent  = `Retina ${fmtSigned(fit.bEIV_R, 2)}`;
+    const ciLo = fit.bEIV_R - 1.96 * fit.seEIV_R, ciHi = fit.bEIV_R + 1.96 * fit.seEIV_R;
+    document.getElementById("p3_peiv").textContent  =
+      `CI [${ciLo.toFixed(2)}, ${ciHi.toFixed(2)}] · Age β_C = ${fmtSigned(fit.bEIV_C, 2)}`;
+
+    const msg = document.getElementById("p3_msg");
+    if (p.lu < 0.05 && p.sigEC > 0.35 && p.alpha > 0.25) {
+      msg.className = "live-banner warn";
+      msg.innerHTML = `<strong>Reverse transfer from a noisy covariate (Preset 3C):</strong> True shared microvascular pathology is <strong>zero</strong> (True Retina β<sub>R</sub> = 0.00, True BP β<sub>C</sub> = ${fmtSigned(pop.bTrue_C)}), yet Naive OLS reports Retina β<sub>R</sub> = ${fmtSigned(fit.bOLS_R)} (${fmtP(fit.pOLS_R)}) because noisy single-visit BP (σ<sub>εC</sub> = ${p.sigEC.toFixed(2)}) fails to block <em>R* &larr; C* &rarr; B*</em>. EIV accounting for error in <em>C</em> restores both slopes.`;
+    } else if (p.lu < 0.05 && p.sigEC <= 0.35) {
+      msg.className = "live-banner";
+      msg.innerHTML = `<strong>Pure common cause screened off (Preset 3D):</strong> Even at high retinal reliability (ICC<sub>R</sub> = ${pop.iccR.toFixed(2)}), <em>C*</em> is the sole connection between eye and brain (<em>U*</em> = 0). Conditioning on exact <em>C</em> renders retina and brain conditionally independent (β<sub>R</sub> = 0.00).`;
+    } else if (pop.bTrue_R > 0.2 && pop.iccR_condC < 0.35) {
+      msg.className = "live-banner warn";
+      msg.innerHTML = `<strong>FWL Failure &amp; Effect Transfer onto Age:</strong> Even though microvascular disease drives Brain WMH (True Retina β<sub>R</sub> = <strong>${fmtSigned(pop.bTrue_R)}</strong> vs True Age β<sub>C</sub> = <strong>${fmtSigned(pop.bTrue_C)}</strong>), dialling retinal reliability down to <strong>ICC<sub>R</sub> = ${pop.iccR.toFixed(2)}</strong> (conditional <strong>ICC<sub>R|C</sub> = ${pop.iccR_condC.toFixed(2)}</strong>) flattens the FWL residual plot, crushes Naive Retina to <strong>${fmtSigned(fit.bOLS_R)}</strong> (${fmtP(fit.pOLS_R)}), and <strong>transfers the effect onto Age (Naive β<sub>C</sub> = ${fmtSigned(fit.bOLS_C)})</strong>! Click <em>3B</em> (or raise <em>k</em>) to watch Retina reclaim its slope.${fit.unstable ? " <em>(Note: SNR is so low here that EIV hits finite-sample stability limits.)</em>" : ""}`;
+    } else {
+      msg.className = "live-banner";
+      msg.innerHTML = `<strong>High-SNR regime — Retina reclaims its biological effect:</strong> With conditional reliability at <strong>ICC<sub>R|C</sub> = ${pop.iccR_condC.toFixed(2)}</strong>, the FWL residual plot preserves a clear slope (Naive β<sub>R</sub> = ${fmtSigned(fit.bOLS_R)}, ${fmtP(fit.pOLS_R)}; EIV β<sub>R</sub> = ${fmtSigned(fit.bEIV_R)}) and Naive Age drops back toward its true value (${fmtSigned(fit.bOLS_C)} vs True ${fmtSigned(pop.bTrue_C)}).`;
+    }
+  }
+
+  // Run 200 simulated cohorts to show real false-negative / false-positive rate + Age transfer
+  document.getElementById("p3_mc").addEventListener("click", () => {
+    const p = getP3Params();
+    const pop = computeP3Population(p);
+    const uScale = Math.sqrt(1 - p.gam * p.gam);
+    const rng = mulberry32(991123);
+    const N_SIM = 200;
+
+    let sigOLS = 0, sigEIV = 0, sumOLS_R = 0, sumOLS_C = 0, sumEIV_R = 0, sumEIV_C = 0;
+    for (let s = 0; s < N_SIM; s++) {
+      const zC = makeNormals(p.n, rng), zU = makeNormals(p.n, rng);
+      const zR = makeNormals(p.n, rng), zB = makeNormals(p.n, rng);
+      const eR = makeNormals(p.n, rng), eB = makeNormals(p.n, rng), eC = makeNormals(p.n, rng);
+
+      const R = new Array(p.n), C = new Array(p.n), B = new Array(p.n);
+      for (let i = 0; i < p.n; i++) {
+        const cs = zC[i];
+        const us = p.gam * cs + uScale * zU[i];
+        R[i] = p.lu * us + p.alpha * cs + p.sigZeta * zR[i] + pop.effER * eR[i];
+        B[i] = p.lu * us + p.alpha * cs + p.sigZeta * zB[i] + p.sigEB * eB[i];
+        C[i] = cs + p.sigEC * eC[i];
+      }
+      const f = fitModels(R, C, B, pop.effER * pop.effER, p.sigEC * p.sigEC);
+      sumOLS_R += f.bOLS_R; sumOLS_C += f.bOLS_C;
+      sumEIV_R += f.bEIV_R; sumEIV_C += f.bEIV_C;
+      if (f.pOLS_R < 0.05) sigOLS++;
+      if (f.pEIV_R < 0.05) sigEIV++;
+    }
+
+    const box = document.getElementById("p3_mc_box");
+    box.style.display = "block";
+    const mOR = sumOLS_R / N_SIM, mOC = sumOLS_C / N_SIM;
+    const mER = sumEIV_R / N_SIM, mEC = sumEIV_C / N_SIM;
+    if (pop.bTrue_R > 0.05) {
+      const missedOLS = N_SIM - sigOLS;
+      box.innerHTML = `<strong>Monte Carlo Across 200 Cohorts (n = ${p.n}; True Retina β<sub>R</sub> = ${fmtSigned(pop.bTrue_R)}, True Age β<sub>C</sub> = ${fmtSigned(pop.bTrue_C)}):</strong><br>` +
+        `• <strong>Naive OLS (<code>B ~ R + C</code>):</strong> Mean Retina β<sub>R</sub> = <strong>${fmtSigned(mOR)}</strong>, Mean Age β<sub>C</sub> = <strong>${fmtSigned(mOC)}</strong> (effect stolen by Age!). <strong>${missedOLS} / 200 studies (${Math.round(missedOLS / 2)}%)</strong> concluded “no independent retinal association” (p &ge; 0.05).<br>` +
+        `• <strong>EIV Disattenuated Model:</strong> Mean Retina β<sub>R</sub> = <strong>${fmtSigned(mER)}</strong>, Mean Age β<sub>C</sub> = <strong>${fmtSigned(mEC)}</strong>, with p &lt; 0.05 in <strong>${sigEIV} / 200 studies (${Math.round(sigEIV / 2)}%)</strong>.`;
+    } else {
+      box.innerHTML = `<strong>Monte Carlo Across 200 Cohorts (n = ${p.n}; True Retina β<sub>R</sub> = 0.00, True Covariate β<sub>C</sub> = ${fmtSigned(pop.bTrue_C)}):</strong><br>` +
+        `• <strong>Naive OLS:</strong> Mean Retina β<sub>R</sub> = <strong>${fmtSigned(mOR)}</strong> (false-positive p &lt; 0.05 in <strong>${sigOLS} / 200 studies, ${Math.round(sigOLS / 2)}%</strong>); Mean β<sub>C</sub> = <strong>${fmtSigned(mOC)}</strong>.<br>` +
+        `• <strong>EIV Disattenuated Model:</strong> Mean Retina β<sub>R</sub> = <strong>${fmtSigned(mER)}</strong> (p &lt; 0.05 in <strong>${sigEIV} / 200 studies, ${Math.round(sigEIV / 2)}%</strong>); Mean β<sub>C</sub> = <strong>${fmtSigned(mEC)}</strong>.`;
+    }
+  });
+
+  const p3Presets = {
+    trap:      { lu: 1.00, g: 0.75, a: 0.00, er: 1.60, k: 1,  eb: 0.85, ec: 0.00, n: 160 },
+    ideal:     { lu: 1.00, g: 0.75, a: 0.00, er: 0.90, k: 12, eb: 0.70, ec: 0.00, n: 160 },
+    noisyconf: { lu: 0.00, g: 0.00, a: 0.95, er: 0.30, k: 4,  eb: 0.55, ec: 1.15, n: 240 },
+    screenoff: { lu: 0.00, g: 0.00, a: 1.00, er: 0.20, k: 8,  eb: 0.45, ec: 0.00, n: 200 }
+  };
+  document.querySelectorAll("[data-p3]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("[data-p3]").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      const p = p3Presets[btn.dataset.p3];
+      document.getElementById("p3_lu").value = p.lu;
+      document.getElementById("p3_g").value  = p.g;
+      document.getElementById("p3_a").value  = p.a;
+      document.getElementById("p3_er").value = p.er;
+      document.getElementById("p3_k").value  = p.k;
+      document.getElementById("p3_eb").value = p.eb;
+      document.getElementById("p3_ec").value = p.ec;
+      document.getElementById("p3_n").value  = p.n;
+      updateP3();
+    });
+  });
+  ["p3_lu", "p3_g", "p3_a", "p3_er", "p3_k", "p3_eb", "p3_ec", "p3_n"].forEach(id => {
+    document.getElementById(id).addEventListener("input", () => {
+      document.querySelectorAll("[data-p3]").forEach(b => b.classList.remove("active"));
+      updateP3();
+    });
+  });
+  document.getElementById("p3_resample").addEventListener("click", () => {
+    p3Seed = (p3Seed + 15485863) >>> 0;
+    p3BuildBase(+document.getElementById("p3_n").value);
+    updateP3();
+  });
+
+
+  /* =========================================================================
+     PART 4: 7-AXIS ENGINEERING SPECIFICATION RADAR & POWER TRANSLATOR
+     ========================================================================= */
+  const p4Axes = [
+    "Biological\nRelevance",
+    "Resolution",
+    "Precision &\nAveraging",
+    "Early/Dynamic\nSensitivity",
+    "Speed &\nConvenience",
+    "Non-Invasive &\nRepeatable",
+    "Low Cost &\nAvailability"
+  ];
+  const p4MRI = [95, 80, 80, 75, 25, 45, 20];
+
+  const p4Profiles = {
+    ideal: {
+      vals: [90, 85, 90, 90, 85, 95, 80],
+      text: "<strong>Target ‘Ideal’ Quantitative Retinal Biomarker:</strong> Directly probes microvascular physiology (e.g., endothelial reactivity or barrier integrity) at high optical/temporal resolution, averages multiple cycles within an eye to push <strong>ICC &gt; 0.85</strong>, and completes non-invasively in ~5 minutes—bridging clinical scalability with trial-grade SNR."
+    },
+    retinopathy: {
+      vals: [80, 35, 70, 20, 85, 95, 90],
+      text: "<strong>Coarse Fundus Signs (Frank Retinopathy / Haemorrhages — Dumitrascu 2018):</strong> Cheap, non-invasive, and biologically specific for severe microvascular barrier breakdown—so adjusted ORs (~1.9–2.2) survive in large meta-analyses. However, as a late binary threshold, it misses early continuous dysfunction and cannot track short-term pharmacodynamic response."
+    },
+    static: {
+      vals: [45, 35, 35, 30, 90, 95, 90],
+      text: "<strong>Unaveraged Single-Frame Static Calibre:</strong> Fast, ubiquitous, and non-invasive, but limited by optical pixel sampling, beat-to-beat cardiac pulsatility (<em>k</em> = 1), and indirect coupling to capillary pathology—placing it right in the Part 3 false-null zone under naive covariate adjustment."
+    },
+    ffa: {
+      vals: [85, 85, 75, 75, 40, 35, 55],
+      text: "<strong>Ultra-Widefield Fluorescein Angiography (FFA):</strong> Directly visualises blood–retinal barrier leakage with strong biological analogy to blood–brain barrier permeability (<em>K</em><sup>trans</sup>), though intravenous dye limits convenience and frequent serial repetition."
+    },
+    mri: {
+      vals: [95, 80, 80, 75, 25, 45, 20],
+      text: "<strong>Reference Brain Imaging (DCE-MRI / Amyloid or Tau PET):</strong> Directly measures the target organ with high biological specificity, but high cost, long scan slots, contrast/tracer requirements, and limited scanner availability restrict population screening and frequent serial monitoring—the very reason retinal surrogates are sought."
+    }
+  };
+
+  let currentP4Key = "ideal";
+
+  function drawRadar(vals) {
+    const canvas = document.getElementById("p4_radar");
+    const { ctx, w, h } = setupCanvas(canvas);
+    ctx.fillStyle = cssVar("--plot-bg");
+    ctx.fillRect(0, 0, w, h);
+
+    const cx = w / 2, cy = h / 2 + 4;
+    const Rmax = Math.min(w, h) * 0.34;
+    const N = p4Axes.length;
+    const ang = i => -Math.PI / 2 + (i * 2 * Math.PI) / N;
+
+    // Concentric web rings
+    ctx.strokeStyle = cssVar("--plot-grid");
+    ctx.lineWidth = 1;
+    [0.25, 0.5, 0.75, 1.0].forEach(level => {
+      ctx.beginPath();
+      for (let i = 0; i < N; i++) {
+        const a = ang(i), x = cx + Rmax * level * Math.cos(a), y = cy + Rmax * level * Math.sin(a);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.stroke();
+    });
+
+    // Spokes + labels
+    ctx.strokeStyle = cssVar("--line");
+    ctx.fillStyle = cssVar("--ink-soft");
+    ctx.font = "600 10.5px Inter, system-ui, sans-serif";
+    for (let i = 0; i < N; i++) {
+      const a = ang(i);
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(cx + Rmax * Math.cos(a), cy + Rmax * Math.sin(a));
+      ctx.stroke();
+
+      const lx = cx + (Rmax + 26) * Math.cos(a);
+      const ly = cy + (Rmax + 20) * Math.sin(a);
+      ctx.textAlign = Math.abs(Math.cos(a)) < 0.2 ? "center" : (Math.cos(a) > 0 ? "left" : "right");
+      ctx.textBaseline = "middle";
+      const lines = p4Axes[i].split("\n");
+      lines.forEach((ln, li) => ctx.fillText(ln, lx, ly + (li - (lines.length - 1) / 2) * 12));
+    }
+
+    // Reference MRI dashed polygon
+    ctx.beginPath();
+    p4MRI.forEach((v, i) => {
+      const a = ang(i), r = Rmax * (v / 100);
+      const x = cx + r * Math.cos(a), y = cy + r * Math.sin(a);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.closePath();
+    ctx.strokeStyle = cssVar("--ink-muted");
+    ctx.setLineDash([4, 4]);
+    ctx.lineWidth = 1.6;
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Active profile polygon
+    ctx.beginPath();
+    vals.forEach((v, i) => {
+      const a = ang(i), r = Rmax * (v / 100);
+      const x = cx + r * Math.cos(a), y = cy + r * Math.sin(a);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.closePath();
+    ctx.save();
+    ctx.globalAlpha = 0.22;
+    ctx.fillStyle = cssVar("--c-vasc");
+    ctx.fill();
+    ctx.restore();
+    ctx.strokeStyle = cssVar("--c-vasc");
+    ctx.lineWidth = 2.4;
+    ctx.stroke();
+
+    vals.forEach((v, i) => {
+      const a = ang(i), r = Rmax * (v / 100);
+      ctx.fillStyle = cssVar("--c-vasc");
+      ctx.beginPath();
+      ctx.arc(cx + r * Math.cos(a), cy + r * Math.sin(a), 3.6, 0, Math.PI * 2);
+      ctx.fill();
+    });
+  }
+
+  function updateP4(customText = false) {
+    const vals = [];
+    for (let i = 1; i <= 7; i++) {
+      const v = +document.getElementById("p4_s" + i).value;
+      document.getElementById("p4_v" + i).textContent = v + "%";
+      vals.push(v);
+    }
+
+    drawRadar(vals);
+
+    // Translate engineering sliders into implied ICC and approximate cohort N for 80% adjusted power
+    const bio = vals[0] / 100, res = vals[1] / 100, prec = vals[2] / 100;
+    const impliedICC = Math.min(0.96, Math.max(0.15, 0.12 + 0.52 * prec + 0.22 * res + 0.12 * bio));
+    const rTrueImplied = 0.12 + 0.42 * bio * (0.5 + 0.5 * res);
+    const rObsCond = rTrueImplied * Math.sqrt(impliedICC * 0.72) * 0.82;
+    const nReq = Math.min(5000, Math.max(30, Math.round(7.85 / Math.max(0.0015, rObsCond * rObsCond))));
+    const prac = Math.round((vals[4] + vals[5] + vals[6]) / 3);
+
+    document.getElementById("p4_icc").textContent = impliedICC.toFixed(2);
+    document.getElementById("p4_nreq").textContent =
+      nReq > 1500 ? "Cohort N for 80% power: >1,500" : `Cohort N for 80% power: ~${nReq}`;
+    document.getElementById("p4_prac").textContent = prac + "%";
+
+    const sumEl = document.getElementById("p4_summary");
+    if (!customText && p4Profiles[currentP4Key]) {
+      sumEl.innerHTML = p4Profiles[currentP4Key].text;
+    } else {
+      sumEl.innerHTML = `<strong>Custom Biomarker Specification:</strong> Combining ${(bio*100).toFixed(0)}% biological proximity with ${(prec*100).toFixed(0)}% precision/averaging yields an implied reliability of <strong>ICC &approx; ${impliedICC.toFixed(2)}</strong> (requiring roughly <strong>N &approx; ${nReq}</strong> participants to detect risk-factor-adjusted brain associations at 80% power) alongside a <strong>${prac}%</strong> deployment practicality score.`;
+    }
+  }
+
+  document.querySelectorAll("[data-p4]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("[data-p4]").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      currentP4Key = btn.dataset.p4;
+      const p = p4Profiles[currentP4Key];
+      p.vals.forEach((v, idx) => {
+        document.getElementById("p4_s" + (idx + 1)).value = v;
+      });
+      updateP4(false);
+    });
+  });
+
+  for (let i = 1; i <= 7; i++) {
+    document.getElementById("p4_s" + i).addEventListener("input", () => {
+      document.querySelectorAll("[data-p4]").forEach(b => b.classList.remove("active"));
+      updateP4(true);
+    });
+  }
+
+  /* =========================================================================
+     INITIALISE & RESIZE HANDLER
+     ========================================================================= */
+  function redrawAll() {
+    updateP1();
+    updateP2();
+    updateP3(false);
+    updateP4(!document.querySelector("[data-p4].active"));
+  }
+
+  let resizeTimer = null;
+  window.addEventListener("resize", () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(redrawAll, 120);
+  });
+
+  p1BuildBase(250);
+  p2BuildBase();
+  p3BuildBase(160);
+  redrawAll();
+})();
+</script>
+</body>
+</html>
